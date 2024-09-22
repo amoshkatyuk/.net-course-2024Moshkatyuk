@@ -14,7 +14,7 @@ namespace Practice
 
         public static Currency UpdateCurrency(ref Currency currency) 
         {
-            currency.Value *= 2;
+            currency.Type = "RUB";
             return currency;
         }
         static void Main(string[] args)
@@ -22,12 +22,13 @@ namespace Practice
             Employee me = new Employee ("Alex", "Moshkatyuk", "AB12345678", "Junior .NET Develover");
             UpdateContract(me);
 
-            Currency usdCurrency = new Currency("USD", 100);
+            Currency usdCurrency = new Currency("USD");
             UpdateCurrency(ref usdCurrency); // без "ref" значение так и останется 100 (ожидалось 200) потому, что передалась бы копия структуры, а не ссылка
 
             BankServices bankServices = new BankServices();
             Employee owner = new Employee("Alex", "Moshkatyuk", "AB12345678", "Owner");
-            bankServices.CalculateOwnerSalary(owner, 1000000, 500000, 2);
+            int salary = bankServices.CalculateOwnerSalary(1000000, 500000, 2);
+            owner.Salary = salary;
 
             Client client = new Client("Alex", "Moshkatyuk", "AB12345678", "87654321");
             Employee employee = bankServices.ConvertClientToEmployee(client);
@@ -35,7 +36,7 @@ namespace Practice
             //консольный вывод
             Console.WriteLine($"Updated contract: {me.Contract}");
 
-            Console.WriteLine($"Updated currency: {usdCurrency.Type}, {usdCurrency.Value}");
+            Console.WriteLine($"Updated currency: {usdCurrency.Type}");
 
             Console.WriteLine($"Зарплата для владельца: {owner.Salary}");
 

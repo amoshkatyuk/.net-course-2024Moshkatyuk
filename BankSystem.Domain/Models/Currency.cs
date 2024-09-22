@@ -9,12 +9,10 @@ namespace BankSystem.Domain.Models
     public struct Currency
     {
         public string Type { get; set; }
-        public double Value { get; set; }
 
-        public Currency(string type, double value)
+        public Currency(string type)
         {
             Type = type;
-            Value = value;
         }
     }
 }

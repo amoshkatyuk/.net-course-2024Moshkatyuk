@@ -9,11 +9,9 @@ namespace BankSystem.App.Services
 {
     public class BankServices
     {
-        public int CalculateOwnerSalary(Employee employee, int bankProfit, int bankExpenses, int countOfOwners) 
+        public int CalculateOwnerSalary(int bankProfit, int bankExpenses, int countOfOwners) 
         {
-            employee.Salary = (bankProfit - bankExpenses) / countOfOwners;
-
-            return employee.Salary;
+            return (bankProfit - bankExpenses) / countOfOwners; ;
         }
 
         public Employee ConvertClientToEmployee(Client client) // не можем сделать Employee employee = (Employee)client т.к. эти классы уже наследуются от Person
