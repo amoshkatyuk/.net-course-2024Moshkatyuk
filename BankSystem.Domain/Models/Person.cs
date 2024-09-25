@@ -12,13 +12,5 @@ namespace BankSystem.Domain.Models
         public string Surname { get; set; }
         public string PassportData { get; set; }
         public int Age { get; set; }
-
-        public Person(string name, string surname, string passportData, int age) 
-        {
-            Name = name;
-            Surname = surname;
-            PassportData = passportData;
-            Age = age;
-        }
     }
 }

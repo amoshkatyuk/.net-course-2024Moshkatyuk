@@ -13,24 +13,16 @@ namespace BankSystem.App.Services
     {
         public List<Client> GenerateClients(int clientsCounter) 
         {
-            Faker faker = new Faker();
+            var faker = new Faker<Client>()
+                .RuleFor(c => c.Name, f => f.Name.FirstName())
+                .RuleFor(c => c.Surname, f => f.Name.LastName())
+                .RuleFor(c => c.PassportData, f => "AB" + f.Random.AlphaNumeric(10))
+                .RuleFor(c => c.Age, f => f.Random.Number(18, 99))
+                .RuleFor(c => c.BankAccount, f => f.Finance.Account())
+                .RuleFor(c => c.TelephoneNumber, f => f.Phone.PhoneNumber("(###) #####"));
 
-            List<Client> clients = new List<Client>();
+            var clients = faker.Generate(clientsCounter);
 
-            for (int i = 0; i < clientsCounter; i++) 
-            {
-                var client = new Client
-                    (
-                        faker.Name.FirstName(),
-                        faker.Name.LastName(),
-                        "AB" + faker.Random.AlphaNumeric(10),
-                        faker.Random.Number(18, 99),
-                        faker.Finance.Account(),
-                        $"373{faker.Random.Number(10000000, 99999999)}"
-                    );
-
-                clients.Add(client);
-            }
             return clients;
         }
 
@@ -38,36 +30,25 @@ namespace BankSystem.App.Services
         {
             var clients = GenerateClients(1000);
 
-            var clientsDictionary = new Dictionary<string, Client>();
+            var clientsDictionary = clients.ToDictionary(client => client.TelephoneNumber);
 
-            foreach (var client in clients) 
-            {
-                clientsDictionary[client.TelephoneNumber] = client;
-            }
             return clientsDictionary;
         }
 
         public List<Employee> GenerateEmployees(int employeesCounter) 
         {
-            Faker faker = new Faker();
+            var faker = new Faker<Employee>()
+                .RuleFor(e => e.Name, f => f.Name.FirstName())
+                .RuleFor(e => e.Surname, f => f.Name.LastName())
+                .RuleFor(e => e.PassportData, f => "AB" + f.Random.AlphaNumeric(10))
+                .RuleFor(e => e.Age, f => f.Random.Number(18, 99))
+                .RuleFor(e => e.Salary, f => f.Finance.Amount(8000, 48000, 2))
+                .RuleFor(e => e.Position, f => f.Name.JobTitle())
+                .RuleFor(e => e.Contract, f => "Контракт не составлен");
 
-            List<Employee> employees = new List<Employee>();
+            var employees = faker.Generate(employeesCounter);
 
-            for (int i = 0; i < employeesCounter; i++)
-            {
-                var employee = new Employee
-                    (
-                        faker.Name.FirstName(),
-                        faker.Name.LastName(),
-                        "AB" + faker.Random.AlphaNumeric(10),
-                        faker.Random.Number(18, 99),
-                        faker.Finance.Amount(8000, 48000 , 2),
-                        faker.Name.JobTitle().ToString()
-                    );
-
-                employees.Add(employee);
-            }
             return employees;
-        }           
+        }
     }
 }
