@@ -14,14 +14,17 @@ namespace BankSystem.App.Services
             return (bankProfit - bankExpenses) / countOfOwners; ;
         }
 
-        public Employee ConvertClientToEmployee(Client client) // не можем сделать Employee employee = (Employee)client т.к. эти классы уже наследуются от Person
+        public Employee ConvertClientToEmployee(Client client, decimal salary = 0, string position = "No position") // не можем сделать Employee employee = (Employee)client т.к. эти классы уже наследуются от Person
         {
-            Employee newEmployee = new Employee(
-                client.Name,
-                client.Surname,
-                client.PassportData,
-                "No position"
-                );
+            Employee newEmployee = new Employee();
+            newEmployee.Name = client.Name;
+            newEmployee.Surname = client.Surname;
+            newEmployee.PassportData = client.PassportData;
+            newEmployee.Age = client.Age;
+            newEmployee.Salary = salary;
+            newEmployee.Position = position;
+            newEmployee.Contract = "Контракт не составлен";
+
             return newEmployee;
         }
     }

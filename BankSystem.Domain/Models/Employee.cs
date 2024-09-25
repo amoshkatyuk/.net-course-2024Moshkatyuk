@@ -8,14 +8,8 @@ namespace BankSystem.Domain.Models
 {
     public class Employee : Person
     {
+        public decimal Salary { get; set; }
         public string Position { get; set; }
-        public int Salary { get; set; }
         public string Contract { get; set; }
-
-        public Employee(string name, string surname, string passportData, string position)
-            : base(name, surname, passportData)
-        {
-            Position = position;
-        }
     }
 }

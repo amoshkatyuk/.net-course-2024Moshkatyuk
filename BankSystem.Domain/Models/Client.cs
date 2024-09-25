@@ -9,11 +9,6 @@ namespace BankSystem.Domain.Models
     public class Client : Person
     {
         public string BankAccount { get; set; }
-
-        public Client(string name, string surname, string passportData, string bankAccount)
-            : base(name, surname, passportData)
-        {
-            BankAccount = bankAccount;
-        }
+        public string TelephoneNumber { get; set; }
     }
 }
