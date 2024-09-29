@@ -6,22 +6,23 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Domain.Models
 {
-    public class Client : Person
+    public class Account
     {
-        public string TelephoneNumber { get; set; }
+        public string Currency { get; set; }
+        public decimal Amount { get; set; }
 
         public override bool Equals(object obj)
         {
-            if (obj is Client client)
+            if (obj is Account account)
             {
-                return PassportData == client.PassportData;
+                return Currency == account.Currency && Amount == account.Amount;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return PassportData.GetHashCode();
+            return HashCode.Combine(Currency, Amount);
         }
     }
 }

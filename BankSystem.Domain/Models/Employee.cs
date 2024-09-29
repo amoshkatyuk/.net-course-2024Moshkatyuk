@@ -11,5 +11,19 @@ namespace BankSystem.Domain.Models
         public decimal Salary { get; set; }
         public string Position { get; set; }
         public string Contract { get; set; }
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is Employee employee)
+            {
+                return Salary == employee.Salary && Position == employee.Position && Contract == employee.Contract;
+            }
+            return false;
+        }
+
+        public override int GetHashCode() 
+        {
+            return HashCode.Combine(Salary, Position, Contract);
+        }
     }
 }

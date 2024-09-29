@@ -18,7 +18,6 @@ namespace BankSystem.App.Services
                 .RuleFor(c => c.Surname, f => f.Name.LastName())
                 .RuleFor(c => c.PassportData, f => "AB" + f.Random.AlphaNumeric(10))
                 .RuleFor(c => c.Age, f => f.Random.Number(18, 99))
-                .RuleFor(c => c.BankAccount, f => f.Finance.Account())
                 .RuleFor(c => c.TelephoneNumber, f => f.Phone.PhoneNumber("(###) #####"));
 
             var clients = faker.Generate(clientsCounter);
@@ -49,6 +48,58 @@ namespace BankSystem.App.Services
             var employees = faker.Generate(employeesCounter);
 
             return employees;
+        }
+
+        public Dictionary<Client, Account> GenerateClientAccountDictionary()
+        {
+            var clients = GenerateClients(3);
+
+            var clientAccountDictionary = new Dictionary<Client, Account>();
+
+            foreach (var client in clients)
+            {
+                var account = GenerateAccount();
+                clientAccountDictionary[client] = account;
+            }
+
+            return clientAccountDictionary;
+        }
+
+        public Dictionary<Client, List<Account>> GenerateClientWithManyAccountsDictionary() 
+        {
+            var clients = GenerateClients(3);
+
+            var clientAccountsDictionary = new Dictionary<Client, List<Account>>();
+
+            foreach (var client in clients)
+            {
+                var account = GenerateAccounts(2);
+                clientAccountsDictionary[client] = account;
+            }
+
+            return clientAccountsDictionary;
+        }
+
+        public Account GenerateAccount() 
+        {
+            var faker = new Faker<Account>()
+                .RuleFor(a => a.Currency, f => f.Finance.Currency().Code)
+                .RuleFor(a => a.Amount, f => f.Finance.Amount(0, 10000, 2));
+
+            var account = faker.Generate();
+
+            return account;
+        }
+
+        public List<Account> GenerateAccounts(int accountCount) 
+        {
+            var faker = new Faker<Account>()
+                .RuleFor(a => a.Currency, f => f.Finance.Currency().Code)
+                .RuleFor(a => a.Amount, f => f.Finance.Amount(0, 10000, 2));
+
+            var accounts = faker.Generate(accountCount);
+
+            return accounts;
         }
     }
 }
