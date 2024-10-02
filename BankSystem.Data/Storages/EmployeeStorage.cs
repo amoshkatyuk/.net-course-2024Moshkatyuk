@@ -33,7 +33,7 @@ namespace BankSystem.Data.Storages
 
         public Employee GetOldestEmployee()
         {
-            return _employees.OrderBy(e => e.Age).LastOrDefault();
+            return _employees.OrderByDescending(e => e.Age).FirstOrDefault();
         }
 
         public double GetEmployeesAverageAge()

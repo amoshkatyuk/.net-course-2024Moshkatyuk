@@ -33,7 +33,7 @@ namespace BankSystem.Data.Storages
 
         public Client GetOldestClient() 
         {
-            return _clients.OrderBy(c => c.Age).LastOrDefault();
+            return _clients.OrderByDescending(c => c.Age).FirstOrDefault();
         }
 
         public double GetClientsAverageAge() 
