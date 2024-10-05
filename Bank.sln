@@ -15,9 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Practice", "Practice\Practi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankSystem.App", "BankSystem.App\BankSystem.App.csproj", "{041A96A6-2649-4631-994A-927B5C263DD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.App.Tests", "BankSystem.App.Tests\BankSystem.App.Tests.csproj", "{4C7DC864-9508-40C2-92FA-A9E061294AAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankSystem.App.Tests", "BankSystem.App.Tests\BankSystem.App.Tests.csproj", "{4C7DC864-9508-40C2-92FA-A9E061294AAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{D16268A1-1AC9-4338-9A98-92430F2F7E7A}"
+	ProjectSection(SolutionItems) = preProject
+		BankSystem.App\Services\TestDataGenerator.cs = BankSystem.App\Services\TestDataGenerator.cs
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.Data", "BankSystem.Data\BankSystem.Data.csproj", "{5E7A471E-C351-41E6-A92D-416C8DD29DCF}"
 EndProject
