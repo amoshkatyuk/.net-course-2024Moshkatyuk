@@ -22,7 +22,7 @@ namespace BankSystem.Domain.Models
                 if (BirthDate.Date > today.AddYears(-age)) age--;
                 return age;
             }
-            set { } // изучить
+            set { }
         }
     }
 }
