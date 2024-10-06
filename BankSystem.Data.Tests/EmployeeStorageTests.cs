@@ -90,7 +90,7 @@ namespace BankSystem.Data.Tests
                 Name = "Alex",
                 Surname = "Ivanov",
                 PassportData = "AB123456789",
-                Age = 60,
+                BirthDate = DateTime.Parse("1964-10-01"),
                 Salary = 8000.00m,
                 Position = "Director",
                 Contract = "Контракт не составлен."
@@ -101,7 +101,7 @@ namespace BankSystem.Data.Tests
                 Name = "Igor",
                 Surname = "Petrov",
                 PassportData = "AB987654321",
-                Age = 40,
+                BirthDate = DateTime.Parse("1984-10-01"),
                 Salary = 6000.00m,
                 Position = "Financial Director",
                 Contract = "Контракт не составлен."
