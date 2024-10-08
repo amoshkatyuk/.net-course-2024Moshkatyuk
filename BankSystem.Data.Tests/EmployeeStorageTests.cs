@@ -12,7 +12,6 @@ namespace BankSystem.Data.Tests
     public class EmployeeStorageTests
     {
         private EmployeeStorage _employeeStorage;
-        TestDataGenerator testDataGenerator = new TestDataGenerator();
 
         public EmployeeStorageTests()
         {
@@ -20,83 +19,9 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void AddEmployeesShouldAddEmployees()
+        public void AddEmployeeShouldAddEmployee()
         {
-            var employees = testDataGenerator.GenerateEmployees(1000);
-            _employeeStorage.AddEmployees(employees);
-
-            Assert.True(employees.Count == 1000);
-        }
-
-        [Fact]
-        public void GetYoungestEmployeeShouldReturnYoungestEmployee()
-        {
-            var employees = testDataGenerator.GenerateEmployees(1000);
-
-            _employeeStorage.AddEmployees(employees);
-
-            var existingEmployee = employees.First();
-
-            var testEmployee = new Employee
-            {
-                Name = existingEmployee.Name,
-                Surname = existingEmployee.Surname,
-                PassportData = existingEmployee.PassportData,
-                Age = 16,
-                Salary = existingEmployee.Salary,
-                Position = existingEmployee.Position,
-                Contract = existingEmployee.Contract
-            };
-
-            _employeeStorage.AddEmployee(testEmployee);
-
-            var youngestEmployee = _employeeStorage.GetYoungestEmployee();
-
-            Assert.Equal(testEmployee.Name, youngestEmployee.Name);
-        }
-
-        [Fact]
-        public void GetOldestEmployeeShouldReturnOldestEmployee()
-        {
-            var employees = testDataGenerator.GenerateEmployees(1000);
-
-            _employeeStorage.AddEmployees(employees);
-
-            var existingEmployee = employees.First();
-
-            var testEmployee = new Employee
-            {
-                Name = existingEmployee.Name,
-                Surname = existingEmployee.Surname,
-                PassportData = existingEmployee.PassportData,
-                Age = 100,
-                Salary = existingEmployee.Salary,
-                Position = existingEmployee.Position,
-                Contract = existingEmployee.Contract
-            };
-
-            _employeeStorage.AddEmployee(testEmployee);
-
-            var oldestEmployee = _employeeStorage.GetOldestEmployee();
-
-            Assert.Equal(testEmployee.Name, oldestEmployee.Name);
-        }
-
-        [Fact]
-        public void GetEmployeesAverageAgeReturnAverageAge()
-        {
-            var firstTestEmployee = new Employee
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Parse("1964-10-01"),
-                Salary = 8000.00m,
-                Position = "Director",
-                Contract = "Контракт не составлен."
-            };
-
-            var secondTestEmployee = new Employee
+            var employee = new Employee
             {
                 Name = "Igor",
                 Surname = "Petrov",
@@ -106,13 +31,108 @@ namespace BankSystem.Data.Tests
                 Position = "Financial Director",
                 Contract = "Контракт не составлен."
             };
+            _employeeStorage.Add(employee);
 
-            _employeeStorage.AddEmployee(firstTestEmployee);
-            _employeeStorage.AddEmployee(secondTestEmployee);
+            var result = _employeeStorage.Get(null, null, "AB987654321", null, null);
+
+            Assert.True(result.Any());
+            Assert.Equal("AB987654321", result.First().PassportData);
+        }
+
+        [Fact]
+        public void GetYoungestEmployeeShouldReturnYoungestEmployee()
+        {
+            var firstEmployee = new Employee
+            {
+                Name = "Igor",
+                Surname = "Petrov",
+                PassportData = "AB987654321",
+                BirthDate = DateTime.Today.AddYears(-25),
+                Salary = 6000.00m,
+                Position = "Financial Director",
+                Contract = "Контракт не составлен."
+            };
+            _employeeStorage.Add(firstEmployee);
+
+            var secondEmployee = new Employee
+            {
+                Name = "Igor",
+                Surname = "Petrov",
+                PassportData = "AB987654321",
+                BirthDate = DateTime.Today.AddYears(-32),
+                Salary = 6000.00m,
+                Position = "Financial Director",
+                Contract = "Контракт не составлен."
+            };
+            _employeeStorage.Add(secondEmployee);
+
+            var youngestEmployee = _employeeStorage.GetYoungestEmployee();
+
+            Assert.Equal(firstEmployee.Name, youngestEmployee.Name);
+        }
+
+        [Fact]
+        public void GetOldestEmployeeShouldReturnOldestEmployee()
+        {
+            var firstEmployee = new Employee
+            {
+                Name = "Igor",
+                Surname = "Petrov",
+                PassportData = "AB987654321",
+                BirthDate = DateTime.Today.AddYears(-25),
+                Salary = 6000.00m,
+                Position = "Financial Director",
+                Contract = "Контракт не составлен."
+            };
+            _employeeStorage.Add(firstEmployee);
+
+            var secondEmployee = new Employee
+            {
+                Name = "Igor",
+                Surname = "Petrov",
+                PassportData = "AB987654321",
+                BirthDate = DateTime.Today.AddYears(-32),
+                Salary = 6000.00m,
+                Position = "Financial Director",
+                Contract = "Контракт не составлен."
+            };
+            _employeeStorage.Add(secondEmployee);
+
+            var oldestEmployee = _employeeStorage.GetYoungestEmployee();
+
+            Assert.Equal(secondEmployee.Name, oldestEmployee.Name);
+        }
+
+        [Fact]
+        public void GetEmployeesAverageAgeReturnAverageAge()
+        {
+            var firstEmployee = new Employee
+            {
+                Name = "Igor",
+                Surname = "Petrov",
+                PassportData = "AB987654321",
+                BirthDate = DateTime.Today.AddYears(-20),
+                Salary = 6000.00m,
+                Position = "Financial Director",
+                Contract = "Контракт не составлен."
+            };
+            _employeeStorage.Add(firstEmployee);
+
+            var secondEmployee = new Employee
+            {
+                Name = "Igor",
+                Surname = "Petrov",
+                PassportData = "AB987654321",
+                BirthDate = DateTime.Today.AddYears(-30),
+                Salary = 6000.00m,
+                Position = "Financial Director",
+                Contract = "Контракт не составлен."
+            };
+            _employeeStorage.Add(secondEmployee);
 
             var employeesAverageAge = _employeeStorage.GetEmployeesAverageAge();
 
-            Assert.Equal(50, employeesAverageAge);
+            Assert.Equal(25, employeesAverageAge);
         }
     }
 }

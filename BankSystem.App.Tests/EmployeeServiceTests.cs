@@ -18,8 +18,8 @@ namespace BankSystem.App.Tests
 
         public EmployeeServiceTests()
         {
-            _employeeService = new EmployeeService();
             _employeeStorage = new EmployeeStorage();
+            _employeeService = new EmployeeService(_employeeStorage);
             _testDataGenerator = new TestDataGenerator();
         }
 
@@ -94,10 +94,56 @@ namespace BankSystem.App.Tests
             employees[2].BirthDate = DateTime.Today.AddYears(-35);
             _employeeService.AddEmployee(employees[2]);
 
-            var filteredEmployees = _employeeService.FilterEmployees("Alex", null, null, null, null, null);
+            var filteredEmployees = _employeeService.FilterEmployees("Alex", null, null, null, null);
 
             Assert.Equal(2, filteredEmployees.Count);
             Assert.All(filteredEmployees, c => Assert.Equal("Alex", c.Name));
+        }
+
+        [Fact]
+        public void UpdateEmployeeShouldReturnUpdatedEmployee() 
+        {
+            var employee = new Employee
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-25),
+            };
+            _employeeService.AddEmployee(employee);
+
+            var updatedEmployee = new Employee
+            {
+                Name = "Ivan",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-25),
+            };
+
+            _employeeService.UpdateEmployee(updatedEmployee);
+
+            var employees = _employeeService.FilterEmployees(passportData: employee.PassportData);
+
+            Assert.True(employees[0].Name == "Ivan");
+        }
+
+        [Fact]
+        public void DeleteEmployeeShouldDeletedEmployee() 
+        {
+            var employee = new Employee
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-25),
+            };
+            _employeeService.AddEmployee(employee);
+
+            _employeeService.DeleteEmployee(employee);
+
+            var employees = _employeeService.FilterEmployees(passportData: employee.PassportData);
+
+            Assert.True(employees.Count == 0);
         }
     }
 }

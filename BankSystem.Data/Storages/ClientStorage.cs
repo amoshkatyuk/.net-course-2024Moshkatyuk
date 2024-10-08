@@ -1,4 +1,6 @@
-﻿using BankSystem.Domain.Models;
+﻿using BankSystem.App.Exceptions;
+using BankSystem.App.Interfaces;
+using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Data.Storages
 {
-    public class ClientStorage
+    public class ClientStorage : IClientStorage
     {
         private Dictionary<Client, List<Account>> _clients;
 
@@ -16,12 +18,65 @@ namespace BankSystem.Data.Storages
             _clients = new Dictionary<Client, List<Account>>();
         }
 
-        public void AddClients(Dictionary<Client, List<Account>> clients)
+        public void Add(Client client)
         {
-            foreach (var client in clients)
+            _clients.Add(client, new List<Account>());
+        }
+
+        public List<Client> Get(string name, string surname, string passportData, DateTime? birthDateFrom, DateTime? birthDateTo)
+        {
+            return _clients.Keys
+                .Where(c =>
+                (string.IsNullOrEmpty(name) || c.Name.Contains(name)) &&
+                (string.IsNullOrEmpty(surname) || c.Surname.Contains(surname)) &&
+                (string.IsNullOrEmpty(passportData) || c.PassportData.Contains(passportData)) &&
+                (!birthDateFrom.HasValue || c.Age >= birthDateFrom.Value.Year) &&
+                (!birthDateTo.HasValue || c.Age <= birthDateTo.Value.Year))
+                .ToList();
+        }
+
+        public void Update(Client client) 
+        {
+            if (!_clients.ContainsKey(client))
             {
-                _clients.Add(client.Key, client.Value);
+                throw new EntityNotFoundException("Клиент не найден");
             }
+
+            var existingAccounts = _clients[client];
+
+            _clients.Remove(client);
+            _clients.Add(client, existingAccounts);
+        }
+
+        public void Delete(Client client) 
+        {
+            if (!_clients.ContainsKey(client))
+            {
+                throw new EntityNotFoundException("Клиент не найден");
+            }
+
+            _clients.Remove(client);
+        }
+
+        public void AddAccount(Client client, List<Account> accounts)
+        {
+            if (_clients.ContainsKey(client))
+            {
+                _clients[client].AddRange(accounts);
+            }
+        }
+
+        public void UpdateAccount(Client client, Account updatedAccount)
+        {
+            var accounts = _clients[client];
+            var existingAccount = accounts.FirstOrDefault(a => a.Currency == updatedAccount.Currency);
+
+            existingAccount.Amount = updatedAccount.Amount;
+        }
+
+        public void DeleteAccount(Client client, Account account) 
+        {
+            _clients[client].Remove(account);
         }
 
         public bool ClientExists(Client client)
@@ -32,35 +87,6 @@ namespace BankSystem.Data.Storages
         public List<Client> GetClients() 
         {
             return _clients.Keys.ToList();
-        }
-
-        public void AddAccountToClient(Client client, Account account) 
-        {
-            if (_clients.ContainsKey(client)) 
-            {
-                _clients[client].Add(account);
-            }
-        }
-
-        public void UpdateClientAccount(Client client, Account updatedAccount) 
-        {
-            var accounts = _clients[client];
-            var existingAccount = accounts.FirstOrDefault(a => a.Currency == updatedAccount.Currency);
-
-            existingAccount.Amount = updatedAccount.Amount;
-        }
-
-        public List<Client> FilterClients(string name, string surname, string passportData, string telephoneNumber, DateTime? birthDateFrom, DateTime? birthDateTo)
-        {
-            return _clients.Keys
-                .Where(c =>
-                (string.IsNullOrEmpty(name) || c.Name.Contains(name)) &&
-                (string.IsNullOrEmpty(surname) || c.Surname.Contains(surname)) &&
-                (string.IsNullOrEmpty(passportData) || c.PassportData.Contains(passportData)) &&
-                (string.IsNullOrEmpty(telephoneNumber) || c.TelephoneNumber.Contains(telephoneNumber)) &&
-                (!birthDateFrom.HasValue || c.Age >= birthDateFrom.Value.Year) &&
-                (!birthDateTo.HasValue || c.Age <= birthDateTo.Value.Year))
-                .ToList();
         }
 
         public List<Account> GetAccounts(Client client)

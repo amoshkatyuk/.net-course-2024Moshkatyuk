@@ -14,13 +14,11 @@ namespace BankSystem.App.Tests
     {
         private ClientService _clientService;
         private ClientStorage _clientStorage;
-        private TestDataGenerator _testDataGenerator;
 
         public ClientServiceTests() 
         {
-            _clientService = new ClientService();
             _clientStorage = new ClientStorage();
-            _testDataGenerator = new TestDataGenerator();
+            _clientService = new ClientService(_clientStorage);
         }
 
         [Fact]
@@ -162,29 +160,89 @@ namespace BankSystem.App.Tests
         [Fact]
         public void FilterClientsShoultReturnFilteredClients() 
         {
-            var clients = _testDataGenerator.GenerateClients(3);
-            clients[0].Name = "Alex";
-            clients[0].Surname = "Moshkatyuk";
-            clients[0].PassportData = "AA1234567";
-            clients[0].BirthDate = DateTime.Today.AddYears(-25);
-            _clientService.AddClient(clients[0]);
+            var firstClient = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-40),
+                TelephoneNumber = "1234567890"
+            };
+            _clientService.AddClient(firstClient);
 
-            clients[1].Name = "Michael";
-            clients[1].Surname = "Jordan";
-            clients[1].PassportData = "BB7654321";
-            clients[1].BirthDate = DateTime.Today.AddYears(-25);
-            _clientService.AddClient(clients[1]);
+            var secondClient = new Client
+            {
+                Name = "Nik",
+                Surname = "Petrov",
+                PassportData = "AB321456789",
+                BirthDate = DateTime.Today.AddYears(-60),
+                TelephoneNumber = "1234567890"
+            };
+            _clientService.AddClient(secondClient);
 
-            clients[2].Name = "Alex";
-            clients[2].Surname = "Ivanov";
-            clients[2].PassportData = "CC1234377";
-            clients[2].BirthDate = DateTime.Today.AddYears(-35);
-            _clientService.AddClient(clients[2]);
+            var thirdClient = new Client
+            {
+                Name = "Alex",
+                Surname = "Petrov",
+                PassportData = "AB123654789",
+                BirthDate = DateTime.Today.AddYears(-50),
+                TelephoneNumber = "1234567890"
+            };
+            _clientService.AddClient(thirdClient);
 
-            var filteredClients = _clientService.FilterClients("Alex", null, null, null, null, null);
+            var filteredClients = _clientService.FilterClients("Alex", null, null, null, null);
 
             Assert.Equal(2, filteredClients.Count);
             Assert.All(filteredClients, c => Assert.Equal("Alex", c.Name));
+        }
+
+        [Fact]
+        public void UpdateClientShouldReturnUpdatedClient() 
+        {
+            var client = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-40),
+                TelephoneNumber = "1234567890"
+            };
+            _clientService.AddClient(client);
+
+            var updatedClient = new Client
+            {
+                Name = "Dmitriy",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-40),
+                TelephoneNumber = "1234567890"
+            };
+
+            _clientService.UpdateClient(updatedClient);
+
+            var clients = _clientService.FilterClients(passportData: updatedClient.PassportData);
+
+            Assert.Equal("Dmitriy", clients[0].Name);
+        }
+
+        [Fact]
+        public void DeleteClientShouldDeletedClient() 
+        {
+            var client = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AB123456789",
+                BirthDate = DateTime.Today.AddYears(-40),
+                TelephoneNumber = "1234567890"
+            };
+            _clientService.AddClient(client);
+
+            _clientService.DeleteClient(client);
+
+            var clients = _clientService.FilterClients(passportData: client.PassportData);
+
+            Assert.True(clients.Count == 0);
         }
     }
 }

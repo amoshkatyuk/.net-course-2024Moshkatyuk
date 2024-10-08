@@ -1,21 +1,21 @@
-﻿using BankSystem.Data.Storages;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BankSystem.Domain.Models;
 using BankSystem.App.Exceptions;
+using BankSystem.App.Interfaces;
 
 namespace BankSystem.App.Services
 {
     public class EmployeeService
     {
-        private EmployeeStorage _employeeStorage;
+        private readonly IEmployeeStorage _employeeStorage;
 
-        public EmployeeService()
+        public EmployeeService(IEmployeeStorage employeeStorage)
         {
-            _employeeStorage = new EmployeeStorage();
+            _employeeStorage = employeeStorage;
         }
 
         public void AddEmployee(Employee employee)
@@ -30,12 +30,32 @@ namespace BankSystem.App.Services
                 throw new UnderagePeopleException("Несовершеннолетний работник");
             }
 
-            _employeeStorage.AddEmployee(employee);
+            _employeeStorage.Add(employee);
         }
 
-        public List<Employee> FilterEmployees(string name = null, string surname = null, string passportData = null, decimal? salary = null, string position = null, string contract = null, DateTime? birthDateFrom = null, DateTime? birthDateTo = null) 
+        public void DeleteEmployee(Employee employee) 
         {
-            return _employeeStorage.FilterEmployees(name, surname, passportData, salary, position, contract, birthDateFrom, birthDateTo);
+            if (!_employeeStorage.EmployeeExists(employee)) 
+            {
+                throw new EntityNotFoundException("Работник не найден");
+            }
+
+            _employeeStorage.Delete(employee);
+        }
+
+        public void UpdateEmployee(Employee employee) 
+        {
+            if (!_employeeStorage.EmployeeExists(employee))
+            {
+                throw new EntityNotFoundException("Работник не найден");
+            }
+
+            _employeeStorage.Update(employee);
+        }
+
+        public List<Employee> FilterEmployees(string name = null, string surname = null, string passportData = null, DateTime? birthDateFrom = null, DateTime? birthDateTo = null) 
+        {
+            return _employeeStorage.Get(name, surname, passportData, birthDateFrom, birthDateTo);
         }
     }
 }

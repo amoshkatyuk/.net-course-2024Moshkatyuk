@@ -9,6 +9,37 @@ namespace BankSystem.App.Services
 {
     public class BankServices
     {
+        private List<Person> _blackList = new List<Person>();
+
+        public void AddBonus(Person person) 
+        {
+            if (person is Employee employee)
+            {
+                employee.Salary += 3000;
+            }
+            else if (person is Client client)
+            {
+                Console.WriteLine($"Бонус клиенту {client.Name}{client.Surname} добавлен");
+            }
+            else 
+            {
+                throw new InvalidOperationException("Неизвестное лицо");
+            }
+        }
+
+        public void AddToBlackList<T>(T person) where T : Person 
+        {
+            if (!IsPersonInBlackList(person)) 
+            {
+                _blackList.Add(person);
+            }
+        }
+
+        public bool IsPersonInBlackList<T>(T person) where T : Person 
+        {
+            return _blackList.Contains(person);
+        }
+
         public int CalculateOwnerSalary(int bankProfit, int bankExpenses, int countOfOwners) 
         {
             return (bankProfit - bankExpenses) / countOfOwners; ;
