@@ -5,17 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using BankSystem.App.Exceptions;
 using BankSystem.Domain.Models;
-using BankSystem.Data.Storages;
+using BankSystem.App.Interfaces;
 
 namespace BankSystem.App.Services
 {
     public class ClientService
     {
-        private ClientStorage _clientStorage;
+        private readonly IClientStorage _clientStorage;
 
-        public ClientService()
+        public ClientService(IClientStorage clientStorage)
         {
-            _clientStorage = new ClientStorage();
+            _clientStorage = clientStorage;
         }
 
         public void ValidateClient(Client client)
@@ -36,25 +36,46 @@ namespace BankSystem.App.Services
             ValidateClient(client);
 
             var defaultAccount = new Account { Currency = "USD", Amount = 0 };
-            _clientStorage.AddClients(new Dictionary<Client, List<Account>> { { client, new List<Account> { defaultAccount } } });
+
+            _clientStorage.Add(client);
+            _clientStorage.AddAccount(client, defaultAccount);
+        }
+
+        public void DeleteClient(Client client) 
+        {
+            if (!_clientStorage.ClientExists(client))
+            {
+                throw new EntityNotFoundException("Искомый клиент не найден");
+            }
+
+            _clientStorage.Delete(client);
+        }
+
+        public void UpdateClient(Client client) 
+        {
+            if (!_clientStorage.ClientExists(client))
+            {
+                throw new EntityNotFoundException("Искомый клиент не найден");
+            }
+            _clientStorage.Update(client);
         }
 
         public void AddAdditionalAccount(Client client, Account account)
         {
             if (!_clientStorage.ClientExists(client))
             {
-                throw new ClientNotFoundException("Искомый клиент не найден");
+                throw new EntityNotFoundException("Искомый клиент не найден");
             }
-            _clientStorage.AddAccountToClient(client, account);
+            _clientStorage.AddAccount(client, account);
         }
 
         public void UpdateAccount(Client client, Account updatedAccount)
         {
             if (!_clientStorage.ClientExists(client))
             {
-                throw new ClientNotFoundException("Искомый клиент не найден");
+                throw new EntityNotFoundException("Искомый клиент не найден");
             }
-            _clientStorage.UpdateClientAccount(client, updatedAccount);
+            _clientStorage.UpdateAccount(client, updatedAccount);
         }
 
         public List<Account> GetAccounts(Client client)
@@ -63,9 +84,9 @@ namespace BankSystem.App.Services
             return accounts;
         }
 
-        public List<Client> FilterClients(string name = null, string surname = null, string passportData = null, string telephoneNumber = null, DateTime? birthDateFrom = null, DateTime? birthDateTo = null)
+        public List<Client> FilterClients(Func<Client, bool> filter)
         {
-            return _clientStorage.FilterClients(name, surname, passportData, telephoneNumber, birthDateFrom, birthDateTo);
+            return _clientStorage.Get(filter);
         }
     }
 }

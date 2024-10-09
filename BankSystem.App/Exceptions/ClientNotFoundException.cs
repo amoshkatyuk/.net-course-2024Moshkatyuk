@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace BankSystem.App.Exceptions
 {
-    public class ClientNotFoundException : Exception
+    public class EntityNotFoundException : Exception
     {
-        public ClientNotFoundException(string message) : base(message) { }
+        public EntityNotFoundException(string message) : base(message) { }
     }
 }

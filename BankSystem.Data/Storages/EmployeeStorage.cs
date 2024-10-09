@@ -1,4 +1,6 @@
-﻿using BankSystem.Domain.Models;
+﻿using BankSystem.App.Exceptions;
+using BankSystem.App.Interfaces;
+using BankSystem.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage
+    public class EmployeeStorage : IEmployeeStorage
     {
         private List<Employee> _employees;
 
@@ -16,33 +18,46 @@ namespace BankSystem.Data.Storages
             _employees = new List<Employee>();
         }
 
-        public void AddEmployees(List<Employee> employees) 
-        {
-            _employees.AddRange(employees);
-        }
-
-        public void AddEmployee(Employee employee) 
+        public void Add(Employee employee) 
         {
             _employees.Add(employee);
         }
 
-        public List<Employee> FilterEmployees(string name, string surname, string passportData, decimal? salary, string position, string contract, DateTime? birthDateFrom, DateTime? birthDateTo)
+        public List<Employee> Get(Func<Employee, bool> filter)
         {
-            return _employees.Where(e =>
-            (string.IsNullOrEmpty(name) || e.Name.Contains(name)) &&
-            (string.IsNullOrEmpty(surname) || e.Surname.Contains(surname)) &&
-            (string.IsNullOrEmpty(passportData) || e.PassportData.Contains(passportData)) &&
-            (!salary.HasValue || e.Salary == salary.Value) &&
-            (string.IsNullOrEmpty(position) || e.Position.Contains(position)) &&
-            (string.IsNullOrEmpty(contract) || e.Contract.Contains(contract)) &&
-            (!birthDateFrom.HasValue || e.BirthDate >= birthDateFrom.Value) &&
-            (!birthDateTo.HasValue || e.BirthDate <= birthDateTo.Value))
-            .ToList();
+            return _employees.Where(filter).ToList();
+        }
+
+        public void Update(Employee employee) 
+        {
+            if (!_employees.Contains(employee))
+            {
+                throw new EntityNotFoundException("Работник не найден");
+            }
+
+            _employees.Remove(employee);
+
+            _employees.Add(employee);
+        }
+
+        public void Delete(Employee employee) 
+        {
+            if (!_employees.Contains(employee))
+            {
+                throw new Exception("Работник не найден");
+            }
+            
+            _employees.Remove(employee);
         }
 
         public Employee GetYoungestEmployee()
         {
             return _employees.OrderBy(e => e.Age).FirstOrDefault();
+        }
+
+        public bool EmployeeExists(Employee employee)
+        {
+            return _employees.Any(e => e.Equals(employee));
         }
 
         public Employee GetOldestEmployee()
