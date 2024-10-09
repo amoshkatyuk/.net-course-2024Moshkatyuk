@@ -23,16 +23,9 @@ namespace BankSystem.Data.Storages
             _clients.Add(client, new List<Account>());
         }
 
-        public List<Client> Get(string name, string surname, string passportData, DateTime? birthDateFrom, DateTime? birthDateTo)
+        public List<Client> Get(Func<Client, bool> filter)
         {
-            return _clients.Keys
-                .Where(c =>
-                (string.IsNullOrEmpty(name) || c.Name.Contains(name)) &&
-                (string.IsNullOrEmpty(surname) || c.Surname.Contains(surname)) &&
-                (string.IsNullOrEmpty(passportData) || c.PassportData.Contains(passportData)) &&
-                (!birthDateFrom.HasValue || c.Age >= birthDateFrom.Value.Year) &&
-                (!birthDateTo.HasValue || c.Age <= birthDateTo.Value.Year))
-                .ToList();
+            return _clients.Keys.Where(filter).ToList();
         }
 
         public void Update(Client client) 
@@ -58,11 +51,11 @@ namespace BankSystem.Data.Storages
             _clients.Remove(client);
         }
 
-        public void AddAccount(Client client, List<Account> accounts)
+        public void AddAccount(Client client, Account account)
         {
             if (_clients.ContainsKey(client))
             {
-                _clients[client].AddRange(accounts);
+                _clients[client].Add(account);
             }
         }
 

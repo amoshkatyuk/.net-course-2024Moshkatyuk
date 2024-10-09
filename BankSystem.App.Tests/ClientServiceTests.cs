@@ -34,7 +34,7 @@ namespace BankSystem.App.Tests
             };
 
             _clientService.AddClient(newClient);
-            var clients = _clientService.FilterClients(passportData: newClient.PassportData);
+            var clients = _clientService.FilterClients(c => c.PassportData == newClient.PassportData);
             var accounts = _clientService.GetAccounts(clients[0]);
 
             Assert.NotNull(clients);
@@ -190,7 +190,7 @@ namespace BankSystem.App.Tests
             };
             _clientService.AddClient(thirdClient);
 
-            var filteredClients = _clientService.FilterClients("Alex", null, null, null, null);
+            var filteredClients = _clientService.FilterClients(c => c.Name == "Alex");
 
             Assert.Equal(2, filteredClients.Count);
             Assert.All(filteredClients, c => Assert.Equal("Alex", c.Name));
@@ -220,7 +220,7 @@ namespace BankSystem.App.Tests
 
             _clientService.UpdateClient(updatedClient);
 
-            var clients = _clientService.FilterClients(passportData: updatedClient.PassportData);
+            var clients = _clientService.FilterClients(c => c.PassportData == updatedClient.PassportData);
 
             Assert.Equal("Dmitriy", clients[0].Name);
         }
@@ -240,7 +240,7 @@ namespace BankSystem.App.Tests
 
             _clientService.DeleteClient(client);
 
-            var clients = _clientService.FilterClients(passportData: client.PassportData);
+            var clients = _clientService.FilterClients(c => c.PassportData == client.PassportData);
 
             Assert.True(clients.Count == 0);
         }

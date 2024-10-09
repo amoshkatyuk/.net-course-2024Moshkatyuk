@@ -23,15 +23,9 @@ namespace BankSystem.Data.Storages
             _employees.Add(employee);
         }
 
-        public List<Employee> Get(string name, string surname, string passportData, DateTime? birthDateFrom, DateTime? birthDateTo)
+        public List<Employee> Get(Func<Employee, bool> filter)
         {
-            return _employees.Where(e =>
-            (string.IsNullOrEmpty(name) || e.Name.Contains(name)) &&
-            (string.IsNullOrEmpty(surname) || e.Surname.Contains(surname)) &&
-            (string.IsNullOrEmpty(passportData) || e.PassportData.Contains(passportData)) &&
-            (!birthDateFrom.HasValue || e.BirthDate >= birthDateFrom.Value) &&
-            (!birthDateTo.HasValue || e.BirthDate <= birthDateTo.Value))
-            .ToList();
+            return _employees.Where(filter).ToList();
         }
 
         public void Update(Employee employee) 

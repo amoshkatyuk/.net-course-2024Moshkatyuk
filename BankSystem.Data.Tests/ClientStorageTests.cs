@@ -50,11 +50,11 @@ namespace BankSystem.Data.Tests
             };
             _clientStorage.Add(client);
 
-            var account = testDataGenerator.GenerateAccounts(1);
+            var account = testDataGenerator.GenerateAccount();
             _clientStorage.AddAccount(client, account);
 
 
-            Assert.Contains(account.First(), _clientStorage.GetAccounts(client));
+            Assert.Contains(account, _clientStorage.GetAccounts(client));
         }
 
         [Fact]
@@ -70,11 +70,11 @@ namespace BankSystem.Data.Tests
             };
             _clientStorage.Add(client);
 
-            var accounts = testDataGenerator.GenerateAccounts(1);
+            var accounts = testDataGenerator.GenerateAccount();
 
             _clientStorage.AddAccount(client, accounts);
 
-            var updatedAccount = new Account { Currency = accounts.First().Currency, Amount = 5000 };
+            var updatedAccount = new Account { Currency = accounts.Currency, Amount = 5000 };
             _clientStorage.UpdateAccount(client, updatedAccount);
 
             var existingAccount = _clientStorage.GetAccounts(client).First(a => a.Currency == updatedAccount.Currency);
@@ -114,7 +114,7 @@ namespace BankSystem.Data.Tests
             };
             _clientStorage.Add(thirdClient);
 
-            var filteredClients = _clientStorage.Get("Alex", "Petrov", null, null, null);
+            var filteredClients = _clientStorage.Get(c => c.Name == "Alex" && c.Surname == "Petrov");
 
             Assert.Equal(1, filteredClients.Count);
             Assert.Equal("Alex", filteredClients.First().Name);

@@ -38,7 +38,7 @@ namespace BankSystem.App.Tests
             };
 
             _employeeService.AddEmployee(newEmployee);
-            var employees = _employeeService.FilterEmployees(passportData: newEmployee.PassportData);
+            var employees = _employeeService.FilterEmployees(e => e.PassportData == newEmployee.PassportData);
 
             Assert.NotNull(employees);
         }
@@ -94,7 +94,7 @@ namespace BankSystem.App.Tests
             employees[2].BirthDate = DateTime.Today.AddYears(-35);
             _employeeService.AddEmployee(employees[2]);
 
-            var filteredEmployees = _employeeService.FilterEmployees("Alex", null, null, null, null);
+            var filteredEmployees = _employeeService.FilterEmployees(e => e.Name == "Alex");
 
             Assert.Equal(2, filteredEmployees.Count);
             Assert.All(filteredEmployees, c => Assert.Equal("Alex", c.Name));
@@ -122,7 +122,7 @@ namespace BankSystem.App.Tests
 
             _employeeService.UpdateEmployee(updatedEmployee);
 
-            var employees = _employeeService.FilterEmployees(passportData: employee.PassportData);
+            var employees = _employeeService.FilterEmployees(e => e.PassportData == employee.PassportData);
 
             Assert.True(employees[0].Name == "Ivan");
         }
@@ -141,7 +141,7 @@ namespace BankSystem.App.Tests
 
             _employeeService.DeleteEmployee(employee);
 
-            var employees = _employeeService.FilterEmployees(passportData: employee.PassportData);
+            var employees = _employeeService.FilterEmployees(e => e.PassportData == employee.PassportData);
 
             Assert.True(employees.Count == 0);
         }

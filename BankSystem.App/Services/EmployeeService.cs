@@ -53,9 +53,9 @@ namespace BankSystem.App.Services
             _employeeStorage.Update(employee);
         }
 
-        public List<Employee> FilterEmployees(string name = null, string surname = null, string passportData = null, DateTime? birthDateFrom = null, DateTime? birthDateTo = null) 
+        public List<Employee> FilterEmployees(Func<Employee, bool> filter) 
         {
-            return _employeeStorage.Get(name, surname, passportData, birthDateFrom, birthDateTo);
+            return _employeeStorage.Get(filter);
         }
     }
 }

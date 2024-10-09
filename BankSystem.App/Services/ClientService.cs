@@ -38,7 +38,7 @@ namespace BankSystem.App.Services
             var defaultAccount = new Account { Currency = "USD", Amount = 0 };
 
             _clientStorage.Add(client);
-            _clientStorage.AddAccount(client, new List<Account> { defaultAccount });
+            _clientStorage.AddAccount(client, defaultAccount);
         }
 
         public void DeleteClient(Client client) 
@@ -66,7 +66,7 @@ namespace BankSystem.App.Services
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
-            _clientStorage.AddAccount(client, new List<Account> { account });
+            _clientStorage.AddAccount(client, account);
         }
 
         public void UpdateAccount(Client client, Account updatedAccount)
@@ -84,9 +84,9 @@ namespace BankSystem.App.Services
             return accounts;
         }
 
-        public List<Client> FilterClients(string name = null, string surname = null, string passportData = null, DateTime? birthDateFrom = null, DateTime? birthDateTo = null)
+        public List<Client> FilterClients(Func<Client, bool> filter)
         {
-            return _clientStorage.Get(name, surname, passportData, birthDateFrom, birthDateTo);
+            return _clientStorage.Get(filter);
         }
     }
 }

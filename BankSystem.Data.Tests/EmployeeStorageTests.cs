@@ -33,7 +33,7 @@ namespace BankSystem.Data.Tests
             };
             _employeeStorage.Add(employee);
 
-            var result = _employeeStorage.Get(null, null, "AB987654321", null, null);
+            var result = _employeeStorage.Get(e => e.PassportData == "AB987654321");
 
             Assert.True(result.Any());
             Assert.Equal("AB987654321", result.First().PassportData);
