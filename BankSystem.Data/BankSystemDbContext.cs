@@ -6,11 +6,6 @@ namespace BankSystem.Data
 {
     public class BankSystemDbContext : DbContext
     {
-        //public BankSystemDbContext(DbContextOptions<BankSystemDbContext> options)
-        //: base(options)
-        //{
-        //}
-
         public DbSet<Client> Clients { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Account> Accounts { get; set; }
