@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Domain.Models
 {
-    public struct Currency
+    public class Currency
     {
+        public Guid Id { get; set; }
         public string Type { get; set; }
     }
 }

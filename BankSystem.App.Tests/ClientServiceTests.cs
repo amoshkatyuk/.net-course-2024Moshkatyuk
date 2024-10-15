@@ -7,242 +7,129 @@ using System.Threading.Tasks;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 using BankSystem.App.Exceptions;
+using BankSystem.Data;
+using Microsoft.EntityFrameworkCore;
+using BankSystem.App.Interfaces;
 
 namespace BankSystem.App.Tests
 {
     public class ClientServiceTests
     {
-        private ClientService _clientService;
-        private ClientStorage _clientStorage;
+        private readonly BankSystemDbContext _context;
+        private readonly ClientService _clientService;
+        private readonly TestDataGenerator _testDataGenerator;
 
-        public ClientServiceTests() 
+        public ClientServiceTests()
         {
-            _clientStorage = new ClientStorage();
-            _clientService = new ClientService(_clientStorage);
+            _context = new BankSystemDbContext();
+            _testDataGenerator = new TestDataGenerator();
+            _clientService = new ClientService(new ClientStorage(_context));
         }
 
         [Fact]
-        public void AddClientShouldAddClientWithDefaultAccount()
+        public void GetClientByIdShouldReturnClientById() 
         {
-            var newClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
+            var client = _testDataGenerator.GenerateClient();
+            _clientService.AddClient(client);
+            _context.SaveChanges();
 
-            _clientService.AddClient(newClient);
-            var clients = _clientService.FilterClients(c => c.PassportData == newClient.PassportData);
-            var accounts = _clientService.GetAccounts(clients[0]);
+            var desiredClient = _clientService.GetClientById(client.Id);
 
-            Assert.NotNull(clients);
-            Assert.Equal(1, clients?.Count);
-            Assert.Equal(newClient.PassportData, clients[0].PassportData);
+            Assert.NotNull(desiredClient);
+            Assert.Equal(client.PassportData, desiredClient.PassportData);
 
-            Assert.NotNull(accounts);
-            Assert.Equal(1, accounts?.Count);
-            Assert.Equal("USD", accounts[0].Currency);
-            Assert.Equal(0, accounts[0].Amount);
+            _clientService.DeleteClient(client.Id);
+            _context.SaveChanges();
         }
 
         [Fact]
-        public void AddClientShouldThrowUnderageException() 
+        public void AddClientShouldAddClient() 
         {
-            var underageClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-15),
-                TelephoneNumber = "1234567890"
-            };
+            var client = _testDataGenerator.GenerateClient();
+            _clientService.AddClient(client);
+            _context.SaveChanges();
 
-            var exception = Assert.Throws<UnderagePeopleException>(() => _clientService.AddClient(underageClient));
-            Assert.Equal("Несовершеннолетний клиент", exception.Message);
+            var existingClient = _clientService.GetClientById(client.Id);
+
+            Assert.Equal(existingClient.PassportData, client.PassportData);
+
+            _clientService.DeleteClient(client.Id);
+            _context.SaveChanges();
         }
 
         [Fact]
-        public void AddClientShouldThrowNoPassportDataException() 
+        public void GetClientsByFilterShouldReturnFilteredClients() 
         {
-            var noPassportDataClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
+            var firstClient = _testDataGenerator.GenerateClient();
+            var secondClient = _testDataGenerator.GenerateClient();
 
-            var exception = Assert.Throws<NoPassportDataException>(() => _clientService.AddClient(noPassportDataClient));
-            Assert.Equal("Клиент не имеет паспортных данных", exception.Message);
-        }
-
-        [Fact]
-        public void AddDefaultAccountForNewClientShouldAddDollarAccount() 
-        {
-            var newClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-
-            _clientService.AddClient(newClient);
-
-            var accounts = _clientService.GetAccounts(newClient);
-            Assert.Contains(accounts, a=> a.Currency == "USD");
-        }
-
-        [Fact]
-        public void AddAdditionalAccountForClientShouldAddNewAccountToExistingClient() 
-        {
-            var newClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientService.AddClient(newClient);
-
-            var newAccount = new Account
-            {
-                Currency = "RUB",
-                Amount = 5000
-            };
-            _clientService.AddAdditionalAccount(newClient, newAccount);
-
-            var accounts = _clientService.GetAccounts(newClient);
-            Assert.Contains(accounts, a=> a.Currency == newAccount.Currency && a.Amount == newAccount.Amount);
-        }
-
-        [Fact]
-        public void UpdateExistingAccountShouldUpdateExistingAccount() 
-        {
-            var newClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientService.AddClient(newClient);
-
-            var newAccount = new Account
-            {
-                Currency = "RUB",
-                Amount = 5000
-            };
-            _clientService.AddAdditionalAccount(newClient, newAccount);
-
-            var updatedAccount = new Account
-            {
-                Currency = "RUB",
-                Amount = 10000
-            };
-            _clientService.UpdateAccount(newClient, updatedAccount);
-
-            var accounts = _clientService.GetAccounts(newClient);
-            
-            Assert.NotEmpty(accounts);
-
-            var existingAccount = accounts.FirstOrDefault(a => a.Currency == updatedAccount.Currency);
-            Assert.NotNull(existingAccount);
-            Assert.Equal(updatedAccount.Amount, existingAccount.Amount);
-
-        }
-
-        [Fact]
-        public void FilterClientsShoultReturnFilteredClients() 
-        {
-            var firstClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-40),
-                TelephoneNumber = "1234567890"
-            };
             _clientService.AddClient(firstClient);
-
-            var secondClient = new Client
-            {
-                Name = "Nik",
-                Surname = "Petrov",
-                PassportData = "AB321456789",
-                BirthDate = DateTime.Today.AddYears(-60),
-                TelephoneNumber = "1234567890"
-            };
             _clientService.AddClient(secondClient);
+            _context.SaveChanges();
 
-            var thirdClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Petrov",
-                PassportData = "AB123654789",
-                BirthDate = DateTime.Today.AddYears(-50),
-                TelephoneNumber = "1234567890"
-            };
-            _clientService.AddClient(thirdClient);
+            var filteredClients = _clientService.FilterClients(c => c.PassportData == secondClient.PassportData);
 
-            var filteredClients = _clientService.FilterClients(c => c.Name == "Alex");
+            Assert.Single(filteredClients);
 
-            Assert.Equal(2, filteredClients.Count);
-            Assert.All(filteredClients, c => Assert.Equal("Alex", c.Name));
+            _clientService.DeleteClient(firstClient.Id);
+            _clientService.DeleteClient(secondClient.Id);
+            _context.SaveChanges();
         }
 
         [Fact]
-        public void UpdateClientShouldReturnUpdatedClient() 
+        public void UpdateClientShouldUpdateExistingClient() 
         {
-            var client = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-40),
-                TelephoneNumber = "1234567890"
-            };
-            _clientService.AddClient(client);
+            var existingClient = _testDataGenerator.GenerateClient();
 
-            var updatedClient = new Client
-            {
-                Name = "Dmitriy",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-40),
-                TelephoneNumber = "1234567890"
-            };
+            _clientService.AddClient(existingClient);
+            _context.SaveChanges();
 
-            _clientService.UpdateClient(updatedClient);
+            existingClient.TelephoneNumber = "37377883636";
+            _context.Clients.Update(existingClient);
+            _context.SaveChanges();
 
-            var clients = _clientService.FilterClients(c => c.PassportData == updatedClient.PassportData);
+            var updatedClient = _clientService.GetClientById(existingClient.Id);
 
-            Assert.Equal("Dmitriy", clients[0].Name);
+            Assert.Equal("37377883636", updatedClient.TelephoneNumber);
+
+            _clientService.DeleteClient(existingClient.Id);
+            _context.SaveChanges();
         }
 
         [Fact]
-        public void DeleteClientShouldDeletedClient() 
+        public void AddAccountShouldAddAccountToClient() 
         {
-            var client = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-40),
-                TelephoneNumber = "1234567890"
-            };
+            var client = _testDataGenerator.GenerateClient();
             _clientService.AddClient(client);
+            _context.SaveChanges();
 
-            _clientService.DeleteClient(client);
+            var account = _testDataGenerator.GenerateAccount(_context);
 
-            var clients = _clientService.FilterClients(c => c.PassportData == client.PassportData);
+            _clientService.AddAdditionalAccount(client.Id, account);
+            _context.SaveChanges();
 
-            Assert.True(clients.Count == 0);
+            var updatedClient = _clientService.GetClientById(client.Id);
+
+            Assert.Contains(account, updatedClient.Accounts);
+
+            _clientService.DeleteClient(client.Id);
+            _context.SaveChanges();
+        }
+
+        [Fact]
+        public void DeleteClientsAccountShouldDeleteClientAccount() 
+        {
+            var client = _testDataGenerator.GenerateClient();
+            _clientService.AddClient(client);
+            _context.SaveChanges();
+
+            _clientService.DeleteAccount(client.Id, client.Accounts.First().Id);
+            _context.SaveChanges();
+
+            Assert.DoesNotContain(client.Accounts.FirstOrDefault(), client.Accounts);
+
+            _clientService.DeleteClient(client.Id);
+            _context.SaveChanges();
         }
     }
 }

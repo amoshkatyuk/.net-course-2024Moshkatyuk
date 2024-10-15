@@ -9,65 +9,45 @@ using System.Threading.Tasks;
 
 namespace BankSystem.Data.Storages
 {
-    public class EmployeeStorage : IEmployeeStorage
+    public class EmployeeStorage : IStorage<Employee>
     {
-        private List<Employee> _employees;
+        private readonly BankSystemDbContext _context;
 
-        public EmployeeStorage() 
+        public EmployeeStorage(BankSystemDbContext context) 
         {
-            _employees = new List<Employee>();
+            _context = context;
         }
 
-        public void Add(Employee employee) 
+        public Employee GetById(Guid employeeId)
         {
-            _employees.Add(employee);
+            return _context.Employees.FirstOrDefault(e => e.Id == employeeId);
+        }
+
+        public void Add(Employee employee)
+        {
+            _context.Employees.Add(employee);
+            _context.SaveChanges();
         }
 
         public List<Employee> Get(Func<Employee, bool> filter)
         {
-            return _employees.Where(filter).ToList();
+            return _context.Employees
+                .Where(filter)
+                .ToList();
         }
 
-        public void Update(Employee employee) 
+        public void Update(Employee employee)
         {
-            if (!_employees.Contains(employee))
-            {
-                throw new EntityNotFoundException("Работник не найден");
-            }
-
-            _employees.Remove(employee);
-
-            _employees.Add(employee);
+            var existingEmployee = GetById(employee.Id);
+            _context.Entry(existingEmployee).CurrentValues.SetValues(employee);
+            _context.SaveChanges();
         }
 
-        public void Delete(Employee employee) 
+        public void Delete(Guid employeeId)
         {
-            if (!_employees.Contains(employee))
-            {
-                throw new Exception("Работник не найден");
-            }
-            
-            _employees.Remove(employee);
-        }
-
-        public Employee GetYoungestEmployee()
-        {
-            return _employees.OrderBy(e => e.Age).FirstOrDefault();
-        }
-
-        public bool EmployeeExists(Employee employee)
-        {
-            return _employees.Any(e => e.Equals(employee));
-        }
-
-        public Employee GetOldestEmployee()
-        {
-            return _employees.OrderByDescending(e => e.Age).FirstOrDefault();
-        }
-
-        public double GetEmployeesAverageAge()
-        {
-            return _employees.Average(e => e.Age);
+            var employee = GetById(employeeId);
+            _context.Employees.Remove(employee);
+            _context.SaveChanges();
         }
     }
 }

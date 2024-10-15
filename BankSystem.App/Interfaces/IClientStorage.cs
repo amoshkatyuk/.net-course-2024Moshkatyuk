@@ -9,11 +9,7 @@ namespace BankSystem.App.Interfaces
 {
     public interface IClientStorage : IStorage<Client>
     {
-        public void AddAccount(Client client, Account account);
-        public void UpdateAccount(Client client, Account updatedAccount);
-        public void DeleteAccount(Client client, Account account);
-
-        public bool ClientExists(Client client);
-        public List<Account> GetAccounts(Client client);
+        public void AddAccount(Guid clientId, Account account);
+        public void DeleteAccount(Guid clientId, Guid accountId);
     }
 }

@@ -8,21 +8,27 @@ namespace BankSystem.Domain.Models
 {
     public class Account
     {
-        public string Currency { get; set; }
+        public Guid Id { get; set; }
         public decimal Amount { get; set; }
+
+        public Guid CurrencyId { get; set; }
+        public Currency Currency { get; set; }
+
+        public Guid ClientId { get; set; }
+        public Client Client { get; set; }
 
         public override bool Equals(object obj)
         {
             if (obj is Account account)
             {
-                return Currency == account.Currency && Amount == account.Amount;
+                return CurrencyId == account.CurrencyId && Amount == account.Amount;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Currency, Amount);
+            return HashCode.Combine(CurrencyId, Amount);
         }
     }
 }

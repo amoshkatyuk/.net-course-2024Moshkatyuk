@@ -2,17 +2,39 @@ using BankSystem.App.Services;
 using BankSystem.Data;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankSystem.Data.Tests
 {
     public class ClientStorageTests
     {
         private ClientStorage _clientStorage;
-        TestDataGenerator testDataGenerator = new TestDataGenerator();
+        private BankSystemDbContext _context;
 
         public ClientStorageTests() 
         {
-            _clientStorage = new ClientStorage();
+            _context = new BankSystemDbContext();
+            _clientStorage = new ClientStorage(_context);
+        }
+
+        [Fact]
+        public void GetByIdShouldGetClientById()
+        {
+            var client = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AA123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                TelephoneNumber = "1234567890"
+            };
+            _clientStorage.Add(client);
+
+            var result = _clientStorage.GetById(client.Id);
+
+            Assert.Equal(client, result);
+
+            _clientStorage.Delete(client.Id);
         }
 
         [Fact]
@@ -23,216 +45,146 @@ namespace BankSystem.Data.Tests
                 Name = "Alex",
                 Surname = "Ivanov",
                 PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
+                BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
 
             _clientStorage.Add(client);
 
-            var clients = _clientStorage.GetClients();
+            var result = _clientStorage.GetById(client.Id);
 
-            Assert.Equal(1, clients.Count);
+            Assert.Equal("Alex", result.Name);
 
-            var result = _clientStorage.ClientExists(client);
-            Assert.True(result);
+            _clientStorage.Delete(client.Id);
         }
 
         [Fact]
-        public void AddAccountToClientShouldAddNewAccount() 
+        public void GetClientsByFilterShouldReturnFilteredClients() 
+        {
+            var firstClient = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AC123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                TelephoneNumber = "1234567890"
+            };
+            _clientStorage.Add(firstClient);
+
+            var secondClient = new Client
+            {
+                Name = "Nick",
+                Surname = "Ivanov",
+                PassportData = "AD123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                TelephoneNumber = "1234567890"
+            };
+            _clientStorage.Add(secondClient);
+
+            var filteredClients = _clientStorage.Get(c => c.Name == "Nick");
+
+            Assert.Equal(filteredClients.First().Name, secondClient.Name);
+
+            _clientStorage.Delete(firstClient.Id);
+            _clientStorage.Delete(secondClient.Id);
+        }
+
+        [Fact]
+        public void UpdateClientShouldUpdateExistingClient() 
+        {
+            var existingClient = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AE123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                TelephoneNumber = "1234567890"
+            };
+            _clientStorage.Add(existingClient);
+
+            existingClient.Surname = "Stepanov";
+            _clientStorage.Update(existingClient);
+
+            var updatedClient = _clientStorage.GetById(existingClient.Id);
+
+            Assert.Equal("Stepanov", updatedClient.Surname);
+
+            _clientStorage.Delete(existingClient.Id);
+        }
+
+        [Fact]
+        public void DeleteClientShouldDeleteExistingClient() 
         {
             var client = new Client
             {
                 Name = "Alex",
                 Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
+                PassportData = "AF123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
             _clientStorage.Add(client);
 
-            var account = testDataGenerator.GenerateAccount();
-            _clientStorage.AddAccount(client, account);
+            _clientStorage.Delete(client.Id);
 
+            var result = _clientStorage.GetById(client.Id);
 
-            Assert.Contains(account, _clientStorage.GetAccounts(client));
+            Assert.Null(result);
         }
 
         [Fact]
-        public void UpdateClientAccountShouldUpdateExistingAccount()
+        public void AddAccountShouldAddAccountToClient() 
         {
             var client = new Client
             {
                 Name = "Alex",
                 Surname = "Ivanov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
+                PassportData = "AG123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                TelephoneNumber = "1234567890",
+                Accounts = new List<Account>()
             };
             _clientStorage.Add(client);
 
-            var accounts = testDataGenerator.GenerateAccount();
+            var currency = new Currency { Type = "RUB" };
 
-            _clientStorage.AddAccount(client, accounts);
+            var account = new Account {Currency = currency, Amount = 1000 };
+            
+            _clientStorage.AddAccount(client.Id, account);
+            
+            var updatedClient = _clientStorage.GetById(client.Id);
 
-            var updatedAccount = new Account { Currency = accounts.Currency, Amount = 5000 };
-            _clientStorage.UpdateAccount(client, updatedAccount);
+            Assert.Contains(account, updatedClient.Accounts);
 
-            var existingAccount = _clientStorage.GetAccounts(client).First(a => a.Currency == updatedAccount.Currency);
-            Assert.Equal(5000, existingAccount.Amount);
+            _clientStorage.Delete(client.Id);
         }
 
         [Fact]
-        public void FilterClientsShouldReturnCorrectResults()
+        public void DeleteClientsAccountShouldDeleteClientAccount() 
         {
-            var firstClient = new Client
+            var client = new Client
             {
                 Name = "Alex",
                 Surname = "Ivanov",
-                PassportData = "AB321456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
+                PassportData = "AH123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                TelephoneNumber = "1234567890",
+                Accounts = new List<Account>()
             };
-            _clientStorage.Add(firstClient);
+            _clientStorage.Add(client);
 
-            var secondClient = new Client
-            {
-                Name = "Nik",
-                Surname = "Petrov",
-                PassportData = "AB123654789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(secondClient);
+            var currency = new Currency { Type = "USD" };
 
-            var thirdClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Petrov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(thirdClient);
+            var account = new Account {Currency = currency, Amount = 1000 };
+            _clientStorage.AddAccount(client.Id, account);
 
-            var filteredClients = _clientStorage.Get(c => c.Name == "Alex" && c.Surname == "Petrov");
+            _clientStorage.DeleteAccount(client.Id, account.Id);
 
-            Assert.Equal(1, filteredClients.Count);
-            Assert.Equal("Alex", filteredClients.First().Name);
-            Assert.Equal("Petrov", filteredClients.First().Surname);
-        }
+            var updatedClient = _clientStorage.GetById(client.Id);
 
-        [Fact]
-        public void GetYoungestClientShouldReturnYoungestClient() 
-        {
-            var firstClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AA123456789",
-                BirthDate = DateTime.Today.AddYears(-20),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(firstClient);
+            Assert.DoesNotContain(account, updatedClient.Accounts);
 
-            var secondClient = new Client
-            {
-                Name = "Nik",
-                Surname = "Petrov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(secondClient);
-
-            var thirdClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Petrov",
-                PassportData = "AC123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(thirdClient);
-
-            var youngestClient = _clientStorage.GetYoungestClient();
-
-            Assert.Equal(firstClient.Name, youngestClient.Name);
-        }
-
-        [Fact]
-        public void GetOldestClientShouldReturnOldestClient() 
-        {
-            var firstClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AA123456789",
-                BirthDate = DateTime.Today.AddYears(-20),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(firstClient);
-
-            var secondClient = new Client
-            {
-                Name = "Nik",
-                Surname = "Petrov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-25),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(secondClient);
-
-            var thirdClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Petrov",
-                PassportData = "AC123456789",
-                BirthDate = DateTime.Today.AddYears(-28),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(thirdClient);
-
-            var oldestClient = _clientStorage.GetOldestClient();
-
-            Assert.Equal(thirdClient.Name, oldestClient.Name);
-        }
-
-        [Fact]
-        public void GetClientsAverageAgeReturnAverageAge() 
-        {
-            var firstClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Ivanov",
-                PassportData = "AA123456789",
-                BirthDate = DateTime.Today.AddYears(-40),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(firstClient);
-
-            var secondClient = new Client
-            {
-                Name = "Nik",
-                Surname = "Petrov",
-                PassportData = "AB123456789",
-                BirthDate = DateTime.Today.AddYears(-60),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(secondClient);
-
-            var thirdClient = new Client
-            {
-                Name = "Alex",
-                Surname = "Petrov",
-                PassportData = "AC123456789",
-                BirthDate = DateTime.Today.AddYears(-50),
-                TelephoneNumber = "1234567890"
-            };
-            _clientStorage.Add(thirdClient);
-
-            var averageAge = _clientStorage.GetClientsAverageAge();
-
-            Assert.Equal(50, averageAge);
+            _clientStorage.Delete(client.Id);
         }
     }
 }

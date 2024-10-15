@@ -10,6 +10,8 @@ namespace BankSystem.Domain.Models
     {
         public string TelephoneNumber { get; set; }
 
+        public ICollection<Account> Accounts { get; set; }
+
         public override bool Equals(object obj)
         {
             if (obj is Client client)

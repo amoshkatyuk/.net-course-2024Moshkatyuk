@@ -9,7 +9,7 @@ namespace BankSystem.Domain.Models
     public class Employee : Person
     {
         public decimal Salary { get; set; }
-        public string Position { get; set; }
+        public string Position { get; set; } // оставил намеренно, чтобы пока не менять структуру моделей
         public string Contract { get; set; }
         
         public override bool Equals(object obj)
