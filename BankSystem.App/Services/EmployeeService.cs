@@ -11,11 +11,23 @@ namespace BankSystem.App.Services
 {
     public class EmployeeService
     {
-        private readonly IEmployeeStorage _employeeStorage;
+        private readonly IStorage<Employee> _employeeStorage;
 
-        public EmployeeService(IEmployeeStorage employeeStorage)
+        public EmployeeService(IStorage<Employee> employeeStorage)
         {
             _employeeStorage = employeeStorage;
+        }
+
+        public Employee GetEmployeeById(Guid employeeId)
+        {
+            var employee = _employeeStorage.GetById(employeeId);
+
+            if (employee == null)
+            {
+                throw new EntityNotFoundException("Искомый работник не найден");
+            }
+
+            return employee;
         }
 
         public void AddEmployee(Employee employee)
@@ -33,29 +45,31 @@ namespace BankSystem.App.Services
             _employeeStorage.Add(employee);
         }
 
-        public void DeleteEmployee(Employee employee) 
-        {
-            if (!_employeeStorage.EmployeeExists(employee)) 
-            {
-                throw new EntityNotFoundException("Работник не найден");
-            }
-
-            _employeeStorage.Delete(employee);
-        }
-
-        public void UpdateEmployee(Employee employee) 
-        {
-            if (!_employeeStorage.EmployeeExists(employee))
-            {
-                throw new EntityNotFoundException("Работник не найден");
-            }
-
-            _employeeStorage.Update(employee);
-        }
-
-        public List<Employee> FilterEmployees(Func<Employee, bool> filter) 
+        public List<Employee> FilterEmployees(Func<Employee, bool> filter)
         {
             return _employeeStorage.Get(filter);
+        }
+
+        public void UpdateEmployee(Employee employee)
+        {
+            if (_employeeStorage.GetById(employee.Id) == null)
+            {
+                throw new EntityNotFoundException("Искомый работник не найден");
+            }
+
+            _employeeStorage.Update(employee.Id, employee);
+        }
+
+        public void DeleteEmployee(Guid employeeId) 
+        {
+            var employee = _employeeStorage.GetById(employeeId);
+
+            if (employee == null)
+            {
+                throw new EntityNotFoundException("Искомый работник не найден");
+            }
+
+            _employeeStorage.Delete(employeeId);
         }
     }
 }

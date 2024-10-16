@@ -31,62 +31,86 @@ namespace BankSystem.App.Services
             }
         }
 
+        public Client GetClientById(Guid clientId) 
+        {
+            var client = _clientStorage.GetById(clientId);
+            
+            if (client == null) 
+            {
+                throw new EntityNotFoundException("Искомый клиент не найден");
+            }
+
+            return client;
+        }
+
         public void AddClient(Client client)
         {
             ValidateClient(client);
 
-            var defaultAccount = new Account { Currency = "USD", Amount = 0 };
+            var currency = new Currency { Type = "USD" };
+
+            var defaultAccount = new Account { Currency = currency, Amount = 0 };
 
             _clientStorage.Add(client);
-            _clientStorage.AddAccount(client, defaultAccount);
-        }
-
-        public void DeleteClient(Client client) 
-        {
-            if (!_clientStorage.ClientExists(client))
-            {
-                throw new EntityNotFoundException("Искомый клиент не найден");
-            }
-
-            _clientStorage.Delete(client);
-        }
-
-        public void UpdateClient(Client client) 
-        {
-            if (!_clientStorage.ClientExists(client))
-            {
-                throw new EntityNotFoundException("Искомый клиент не найден");
-            }
-            _clientStorage.Update(client);
-        }
-
-        public void AddAdditionalAccount(Client client, Account account)
-        {
-            if (!_clientStorage.ClientExists(client))
-            {
-                throw new EntityNotFoundException("Искомый клиент не найден");
-            }
-            _clientStorage.AddAccount(client, account);
-        }
-
-        public void UpdateAccount(Client client, Account updatedAccount)
-        {
-            if (!_clientStorage.ClientExists(client))
-            {
-                throw new EntityNotFoundException("Искомый клиент не найден");
-            }
-            _clientStorage.UpdateAccount(client, updatedAccount);
-        }
-
-        public List<Account> GetAccounts(Client client)
-        {
-            var accounts = _clientStorage.GetAccounts(client);
-            return accounts;
+            _clientStorage.AddAccount(client.Id, defaultAccount);
         }
 
         public List<Client> FilterClients(Func<Client, bool> filter)
         {
             return _clientStorage.Get(filter);
+        }
+
+        public void UpdateClient(Client client)
+        {
+            if (_clientStorage.GetById(client.Id) == null)
+            {
+                throw new EntityNotFoundException("Искомый клиент не найден");
+            }
+
+            _clientStorage.Update(client.Id, client);
+        }
+
+        public void DeleteClient(Guid clientId) 
+        {
+            var client = _clientStorage.GetById(clientId);
+
+            if (client == null)
+            {
+                throw new EntityNotFoundException("Искомый клиент не найден");
+            }
+
+            _clientStorage.Delete(clientId);
+        }
+       
+        public void AddAdditionalAccount(Guid clientId, Account account)
+        {
+            var client = _clientStorage.GetById(clientId);
+
+            if (client == null)
+            {
+                throw new EntityNotFoundException("Искомый клиент не найден");
+            }
+
+            _clientStorage.AddAccount(clientId, account);
+        }
+
+        public void DeleteAccount(Guid clientId, Guid accountId) 
+        {
+            var client = _clientStorage.GetById(clientId);
+
+            if (client == null)
+            {
+                throw new EntityNotFoundException("Клиент не найден");
+            }
+
+            var account = client.Accounts.FirstOrDefault(a => a.Id == accountId);
+
+            if (account == null)
+            {
+                throw new EntityNotFoundException("Искомый счет не найден");
+            }
+
+            _clientStorage.DeleteAccount(clientId, accountId);
         }
     }
 }
