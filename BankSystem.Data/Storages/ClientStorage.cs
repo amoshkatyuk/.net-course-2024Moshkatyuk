@@ -39,9 +39,9 @@ namespace BankSystem.Data.Storages
                 .ToList();
         }
 
-        public void Update(Client client) 
+        public void Update(Guid clientId, Client client) 
         {
-            var existingClient = GetById(client.Id);
+            var existingClient = GetById(clientId);
             _context.Entry(existingClient).CurrentValues.SetValues(client);
             _context.SaveChanges();
         }
@@ -91,6 +91,11 @@ namespace BankSystem.Data.Storages
                 client.Accounts.Remove(account);
                 _context.SaveChanges();
             }
-        }  
+        }
+
+        public double GetAverageAge() 
+        {
+            return _context.Clients.Average(c => c.Age);
+        }
     }
 }

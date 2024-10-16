@@ -36,9 +36,9 @@ namespace BankSystem.Data.Storages
                 .ToList();
         }
 
-        public void Update(Employee employee)
+        public void Update(Guid employeeId, Employee employee)
         {
-            var existingEmployee = GetById(employee.Id);
+            var existingEmployee = GetById(employeeId);
             _context.Entry(existingEmployee).CurrentValues.SetValues(employee);
             _context.SaveChanges();
         }

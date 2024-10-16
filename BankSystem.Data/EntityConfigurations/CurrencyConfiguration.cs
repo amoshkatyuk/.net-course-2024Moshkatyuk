@@ -15,6 +15,11 @@ namespace BankSystem.Data.EntityConfigurations
             builder.Property(c => c.Type)
                    .IsRequired()
                    .HasMaxLength(3);
+
+            builder.HasMany(c => c.Accounts)
+                   .WithOne(a => a.Currency)
+                   .HasForeignKey(a => a.CurrencyId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

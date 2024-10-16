@@ -20,7 +20,7 @@ namespace BankSystem.Data.EntityConfigurations
             builder.Property(a => a.Amount).IsRequired();
 
             builder.HasOne(a => a.Currency)
-                   .WithMany()
+                   .WithMany(c => c.Accounts)
                    .HasForeignKey(a => a.CurrencyId)
                    .OnDelete(DeleteBehavior.Restrict);
 

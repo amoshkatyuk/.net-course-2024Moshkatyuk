@@ -57,7 +57,7 @@ namespace BankSystem.App.Services
                 throw new EntityNotFoundException("Искомый работник не найден");
             }
 
-            _employeeStorage.Update(employee);
+            _employeeStorage.Update(employee.Id, employee);
         }
 
         public void DeleteEmployee(Guid employeeId) 

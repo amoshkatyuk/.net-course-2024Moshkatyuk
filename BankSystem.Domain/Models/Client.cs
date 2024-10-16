@@ -16,14 +16,14 @@ namespace BankSystem.Domain.Models
         {
             if (obj is Client client)
             {
-                return PassportData == client.PassportData;
+                return Id == client.Id;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return PassportData.GetHashCode();
+            return Id.GetHashCode();
         }
     }
 }

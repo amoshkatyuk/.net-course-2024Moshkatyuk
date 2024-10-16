@@ -103,7 +103,7 @@ namespace BankSystem.Data.Tests
             _clientStorage.Add(existingClient);
 
             existingClient.Surname = "Stepanov";
-            _clientStorage.Update(existingClient);
+            _clientStorage.Update(existingClient.Id, existingClient);
 
             var updatedClient = _clientStorage.GetById(existingClient.Id);
 
@@ -185,6 +185,37 @@ namespace BankSystem.Data.Tests
             Assert.DoesNotContain(account, updatedClient.Accounts);
 
             _clientStorage.Delete(client.Id);
+        }
+
+        [Fact]
+        public void GetClientsAverageAgeReturnAverageAge() 
+        {
+            var firstClient = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AH123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-20),
+                TelephoneNumber = "1234567890",
+            };
+            _clientStorage.Add(firstClient);
+
+            var secondClient = new Client
+            {
+                Name = "Alex",
+                Surname = "Ivanov",
+                PassportData = "AH123456789",
+                BirthDate = DateTime.UtcNow.AddYears(-30),
+                TelephoneNumber = "1234567890",
+            };
+            _clientStorage.Add(secondClient);
+
+            var averageAge = _clientStorage.GetAverageAge();
+
+            Assert.Equal(25, averageAge);
+
+            _clientStorage.Delete(firstClient.Id);
+            _clientStorage.Delete(secondClient.Id);
         }
     }
 }

@@ -67,7 +67,7 @@ namespace BankSystem.App.Services
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            _clientStorage.Update(client);
+            _clientStorage.Update(client.Id, client);
         }
 
         public void DeleteClient(Guid clientId) 

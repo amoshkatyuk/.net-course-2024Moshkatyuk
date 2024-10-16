@@ -16,14 +16,14 @@ namespace BankSystem.Domain.Models
         {
             if (obj is Employee employee)
             {
-                return Salary == employee.Salary && Position == employee.Position && Contract == employee.Contract;
+                return Id == employee.Id;
             }
             return false;
         }
 
         public override int GetHashCode() 
         {
-            return HashCode.Combine(Salary, Position, Contract);
+            return Id.GetHashCode();
         }
     }
 }

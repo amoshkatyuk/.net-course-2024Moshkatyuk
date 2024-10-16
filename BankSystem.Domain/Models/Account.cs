@@ -21,14 +21,15 @@ namespace BankSystem.Domain.Models
         {
             if (obj is Account account)
             {
-                return CurrencyId == account.CurrencyId && Amount == account.Amount;
+                return Id == account.Id;
             }
+
             return false;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(CurrencyId, Amount);
+            return Id.GetHashCode();
         }
     }
 }

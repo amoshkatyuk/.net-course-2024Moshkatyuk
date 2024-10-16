@@ -34,7 +34,6 @@ namespace BankSystem.App.Tests
         {
             var employee = _testDataGenerator.GenerateEmployee();
             _employeeService.AddEmployee(employee);
-            _context.SaveChanges();
 
             var desiredEmployee = _employeeService.GetEmployeeById(employee.Id);
 
@@ -42,7 +41,6 @@ namespace BankSystem.App.Tests
             Assert.Equal(employee.PassportData, desiredEmployee.PassportData);
 
             _employeeService.DeleteEmployee(employee.Id);
-            _context.SaveChanges();
         }
 
         [Fact]
@@ -50,14 +48,12 @@ namespace BankSystem.App.Tests
         {
             var employee = _testDataGenerator.GenerateEmployee();
             _employeeService.AddEmployee(employee);
-            _context.SaveChanges();
 
             var existingEmployee = _employeeService.GetEmployeeById(employee.Id);
 
             Assert.Equal(employee.PassportData, existingEmployee.PassportData);
 
             _employeeService.DeleteEmployee(employee.Id);
-            _context.SaveChanges();
         }
 
         [Fact]
@@ -68,7 +64,6 @@ namespace BankSystem.App.Tests
 
             _employeeService.AddEmployee(firstEmployee);
             _employeeService.AddEmployee(secondEmployee);
-            _context.SaveChanges();
 
             var filteredEmployees = _employeeService.FilterEmployees(e => e.PassportData == secondEmployee.PassportData);
 
@@ -76,7 +71,6 @@ namespace BankSystem.App.Tests
 
             _employeeService.DeleteEmployee(firstEmployee.Id);
             _employeeService.DeleteEmployee(secondEmployee.Id);
-            _context.SaveChanges();
         }
 
         [Fact]
@@ -85,18 +79,15 @@ namespace BankSystem.App.Tests
             var existingEmployee = _testDataGenerator.GenerateEmployee();
 
             _employeeService.AddEmployee(existingEmployee);
-            _context.SaveChanges();
 
             existingEmployee.Contract = "Half-day";
             _context.Employees.Update(existingEmployee);
-            _context.SaveChanges();
 
             var updatedEmployee = _employeeService.GetEmployeeById(existingEmployee.Id);
 
             Assert.Equal("Half-day", updatedEmployee.Contract);
 
             _employeeService.DeleteEmployee(existingEmployee.Id);
-            _context.SaveChanges();
         }
     }
 }

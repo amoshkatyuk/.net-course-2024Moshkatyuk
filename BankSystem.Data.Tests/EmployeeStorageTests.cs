@@ -127,7 +127,7 @@ namespace BankSystem.Data.Tests
             _employeeStorage.Add(existingEmployee);
 
             existingEmployee.Surname = "Stepanov";
-            _employeeStorage.Update(existingEmployee);
+            _employeeStorage.Update(existingEmployee.Id, existingEmployee);
 
             var updatedEmployee = _employeeStorage.GetById(existingEmployee.Id);
 

@@ -12,7 +12,7 @@ namespace BankSystem.App.Interfaces
         public void Add(T item);
         public T GetById(Guid id);
         public List<T> Get(Func<T, bool> filter);
-        public void Update(T item);
+        public void Update(Guid id, T item);
         public void Delete(Guid id);
 
     }
