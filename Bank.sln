@@ -23,6 +23,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankSystem.Data", "BankSyst
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankSystem.Data.Tests", "BankSystem.Data.Tests\BankSystem.Data.Tests.csproj", "{B02AD742-6AB3-4876-B2DC-9E66DD82552B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExportTool", "ExportTool\ExportTool.csproj", "{39E6FA5C-DB56-4DB6-85C9-D4C92706FD6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankSystem.ExportTool.Tests", "BankSystem.ExportTool.Tests\BankSystem.ExportTool.Tests.csproj", "{CB03067B-919F-4F3F-99BF-691A40BCD762}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +57,14 @@ Global
 		{B02AD742-6AB3-4876-B2DC-9E66DD82552B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B02AD742-6AB3-4876-B2DC-9E66DD82552B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B02AD742-6AB3-4876-B2DC-9E66DD82552B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39E6FA5C-DB56-4DB6-85C9-D4C92706FD6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39E6FA5C-DB56-4DB6-85C9-D4C92706FD6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39E6FA5C-DB56-4DB6-85C9-D4C92706FD6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39E6FA5C-DB56-4DB6-85C9-D4C92706FD6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB03067B-919F-4F3F-99BF-691A40BCD762}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB03067B-919F-4F3F-99BF-691A40BCD762}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB03067B-919F-4F3F-99BF-691A40BCD762}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB03067B-919F-4F3F-99BF-691A40BCD762}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +76,8 @@ Global
 		{4C7DC864-9508-40C2-92FA-A9E061294AAC} = {2DAB60D7-5A6B-4CEC-A89D-2D0EA563B334}
 		{5E7A471E-C351-41E6-A92D-416C8DD29DCF} = {D16268A1-1AC9-4338-9A98-92430F2F7E7A}
 		{B02AD742-6AB3-4876-B2DC-9E66DD82552B} = {D16268A1-1AC9-4338-9A98-92430F2F7E7A}
+		{39E6FA5C-DB56-4DB6-85C9-D4C92706FD6F} = {BCDD88E8-992E-4798-A26E-12FB1F55E5A5}
+		{CB03067B-919F-4F3F-99BF-691A40BCD762} = {BCDD88E8-992E-4798-A26E-12FB1F55E5A5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0097849E-39FC-49C1-B05C-98D472240A58}
