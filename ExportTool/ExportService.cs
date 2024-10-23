@@ -4,6 +4,7 @@ using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 using CsvHelper;
 using System.Globalization;
+using Newtonsoft.Json;
 
 namespace ExportTool
 {
@@ -50,6 +51,70 @@ namespace ExportTool
                         return csvReader.GetRecords<T>().ToList();
                     }
                 }
+            }
+        }
+
+        public void ExportSerializedDataToFile(IEnumerable<T> entities, string pathToDirectory, string jsonFileName)
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+            }
+
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+
+            string jsonContent = JsonConvert.SerializeObject(entities, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+
+            File.WriteAllText(fullPath, jsonContent);
+        }
+
+        public void ExportSerializedDataToFile(T entity, string pathToDirectory, string jsonFileName) 
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(pathToDirectory);
+            if (!dirInfo.Exists) 
+            {
+                dirInfo.Create();
+            }
+
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+
+            string jsonContent = JsonConvert.SerializeObject(entity, new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+
+            File.WriteAllText(fullPath, jsonContent);
+        }
+
+        public IEnumerable<T> ImportSerializedDataFromFile(string pathToDirectory, string jsonFileName) 
+        {
+            string fullPath = Path.Combine(pathToDirectory, jsonFileName);
+
+            if (!File.Exists(fullPath)) 
+            {
+                throw new FileNotFoundException("Файл для импорта не найден");
+            }
+
+            string jsonContent = File.ReadAllText(fullPath);
+
+            if (string.IsNullOrWhiteSpace(jsonContent)) 
+            {
+                throw new InvalidOperationException("Файл пуст или содержит некорректные данные");
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<IEnumerable<T>>(jsonContent);
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidOperationException("Ошибка десериализации данных", ex);
             }
         }
     }
