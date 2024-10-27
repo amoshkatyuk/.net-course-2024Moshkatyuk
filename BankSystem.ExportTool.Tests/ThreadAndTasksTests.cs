@@ -69,6 +69,7 @@ namespace BankSystem.ExportTool.Tests
             int fileCounter = 1;
             string currentFileName = $"{_testJsonFileName}_{fileCounter}.json";
             long currentFileSize = 0;
+            List<Client> clients = new List<Client>();
 
             while (true)
             {
@@ -93,7 +94,9 @@ namespace BankSystem.ExportTool.Tests
                     continue;
                 }
 
-                string jsonContent = JsonConvert.SerializeObject(client, new JsonSerializerSettings
+                clients.Add(client);
+
+                string jsonContent = JsonConvert.SerializeObject(clients, new JsonSerializerSettings
                 {
                     Formatting = Formatting.Indented,
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
@@ -103,15 +106,30 @@ namespace BankSystem.ExportTool.Tests
 
                 if (currentFileSize + newContentSize > _maxFileSize)
                 {
+                    File.WriteAllText(Path.Combine(_testJsonDirectory, currentFileName), jsonContent);
+
                     fileCounter++;
                     currentFileName = $"{_testJsonFileName}_{fileCounter}.json";
                     currentFileSize = 0;
+                    clients.Clear();
                 }
+                else
+                {
+                    currentFileSize += newContentSize;
+                }
+            }
 
-                File.AppendAllText(Path.Combine(_testJsonDirectory, currentFileName), jsonContent + Environment.NewLine);
-                currentFileSize += newContentSize;
+            if (clients.Count > 0)
+            {
+                string finalJsonContent = JsonConvert.SerializeObject(clients, new JsonSerializerSettings
+                {
+                    Formatting = Formatting.Indented,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                });
+                File.WriteAllText(Path.Combine(_testJsonDirectory, currentFileName), finalJsonContent);
             }
         }
+
 
         [Fact]
         public void PipelineProcessingClientsShouldExportToFiles()
@@ -135,16 +153,15 @@ namespace BankSystem.ExportTool.Tests
                 Thread.Sleep(100);
             }
 
-
             for (int i = 1; i <= 2; i++)
             {
                 string filePath = Path.Combine(_testJsonDirectory, $"{_testJsonFileName}_{i}.json");
 
                 Assert.True(File.Exists(filePath), $"Файл {filePath} должен существовать.");
 
-                string fileContent = File.ReadAllText(filePath);
-                Assert.NotNull(fileContent);
-                Assert.NotEmpty(fileContent);
+                List<Client> clients = JsonConvert.DeserializeObject<List<Client>>(File.ReadAllText(filePath));
+                Assert.NotNull(clients);
+                Assert.NotEmpty(clients);
             }
         }
 
