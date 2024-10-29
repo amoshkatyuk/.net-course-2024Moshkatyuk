@@ -19,43 +19,44 @@ namespace BankSystem.Data.Storages
             _context = context;
         }
 
-        public Client GetById(Guid clientId) 
+        public async Task<Client> GetByIdAsync(Guid clientId) 
         {
-            return _context.Clients.Include(c => c.Accounts)
-                .FirstOrDefault(c => c.Id == clientId);
+            return await _context.Clients
+                .Include(c => c.Accounts)
+                .FirstOrDefaultAsync(c => c.Id == clientId);
         }
 
-        public void Add(Client client)
+        public async Task AddAsync(Client client)
         {
-            _context.Clients.Add(client);
-            _context.SaveChanges();
+            await _context.Clients.AddAsync(client);
+            await _context.SaveChangesAsync();
         }
 
-        public List<Client> Get(Func<Client, bool> filter)
+        public async Task<List<Client>> GetAsync(Func<Client, bool> filter)
         {
-            return _context.Clients
+            return await Task.Run(() => _context.Clients
                 .Include(c => c.Accounts)
                 .Where(filter)
-                .ToList();
+                .ToList());
         }
 
-        public void Update(Guid clientId, Client client) 
+        public async Task UpdateAsync(Guid clientId, Client client) 
         {
-            var existingClient = GetById(clientId);
+            var existingClient = await GetByIdAsync(clientId);
             _context.Entry(existingClient).CurrentValues.SetValues(client);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(Guid clientId) 
+        public async Task DeleteAsync(Guid clientId) 
         {
-            var client = GetById(clientId);
+            var client = await GetByIdAsync(clientId);
             _context.Clients.Remove(client);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void AddAccount(Guid clientId, Account account)
+        public async Task AddAccountAsync(Guid clientId, Account account)
         {
-            var client = GetById(clientId);
+            var client = await GetByIdAsync(clientId);
 
             if (client == null)
             {
@@ -65,11 +66,11 @@ namespace BankSystem.Data.Storages
             account.ClientId = clientId;
             account.Client = client;
 
-            var existingCurrency = _context.Currencies.FirstOrDefault(c => c.Type == account.Currency.Type);
+            var existingCurrency = await _context.Currencies.FirstOrDefaultAsync(c => c.Type == account.Currency.Type);
             
             if (existingCurrency == null)
             {
-                _context.Currencies.Add(account.Currency);
+                await _context.Currencies.AddAsync(account.Currency);
             }
             else
             {
@@ -77,25 +78,25 @@ namespace BankSystem.Data.Storages
                 account.Currency = existingCurrency;
             }
 
-            _context.Accounts.Add(account);
-            _context.SaveChanges();
+            await _context.Accounts.AddAsync(account);
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteAccount(Guid clientId, Guid accountId) 
+        public async Task DeleteAccountAsync(Guid clientId, Guid accountId) 
         {
-            var client = GetById(clientId);
+            var client = await GetByIdAsync(clientId);
             var account = client.Accounts.FirstOrDefault(a => a.Id == accountId);
             
-            if(account != null) 
+            if (account != null) 
             {
                 client.Accounts.Remove(account);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public double GetAverageAge() 
+        public async Task<double> GetAverageAgeAsync() 
         {
-            return _context.Clients.Average(c => c.Age);
+            return await _context.Clients.AverageAsync(c => c.Age);
         }
     }
 }

@@ -18,9 +18,9 @@ namespace BankSystem.App.Services
             _employeeStorage = employeeStorage;
         }
 
-        public Employee GetEmployeeById(Guid employeeId)
+        public async Task<Employee> GetEmployeeByIdAsync(Guid employeeId)
         {
-            var employee = _employeeStorage.GetById(employeeId);
+            var employee = await _employeeStorage.GetByIdAsync(employeeId);
 
             if (employee == null)
             {
@@ -30,7 +30,7 @@ namespace BankSystem.App.Services
             return employee;
         }
 
-        public void AddEmployee(Employee employee)
+        public async Task AddEmployeeAsync(Employee employee)
         {
             if (string.IsNullOrWhiteSpace(employee.PassportData))
             {
@@ -42,34 +42,36 @@ namespace BankSystem.App.Services
                 throw new UnderagePeopleException("Несовершеннолетний работник");
             }
 
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
         }
 
-        public List<Employee> FilterEmployees(Func<Employee, bool> filter)
+        public async Task<List<Employee>> FilterEmployeesAsync(Func<Employee, bool> filter)
         {
-            return _employeeStorage.Get(filter);
+            return await _employeeStorage.GetAsync(filter);
         }
 
-        public void UpdateEmployee(Employee employee)
+        public async Task UpdateEmployeeAsync(Employee employee)
         {
-            if (_employeeStorage.GetById(employee.Id) == null)
+            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id);
+
+            if (existingEmployee == null)
             {
                 throw new EntityNotFoundException("Искомый работник не найден");
             }
 
-            _employeeStorage.Update(employee.Id, employee);
+            await _employeeStorage.UpdateAsync(employee.Id, employee);
         }
 
-        public void DeleteEmployee(Guid employeeId) 
+        public async Task DeleteEmployeeAsync(Guid employeeId) 
         {
-            var employee = _employeeStorage.GetById(employeeId);
+            var employee = await _employeeStorage.GetByIdAsync(employeeId);
 
             if (employee == null)
             {
                 throw new EntityNotFoundException("Искомый работник не найден");
             }
 
-            _employeeStorage.Delete(employeeId);
+            await _employeeStorage.DeleteAsync(employeeId);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace BankSystem.Data.Tests
         }
 
         [Fact]
-        public void GetByIdShouldGetClientById()
+        public async Task GetByIdShouldGetClientById()
         {
             var client = new Client
             {
@@ -28,17 +28,17 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
 
-            var result = _clientStorage.GetById(client.Id);
+            var result = await _clientStorage.GetByIdAsync(client.Id);
 
             Assert.Equal(client, result);
 
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id);
         }
 
         [Fact]
-        public void AddClientShouldAddClient()
+        public async Task AddClientShouldAddClient()
         {
             var client = new Client
             {
@@ -49,17 +49,17 @@ namespace BankSystem.Data.Tests
                 TelephoneNumber = "1234567890"
             };
 
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
 
-            var result = _clientStorage.GetById(client.Id);
+            var result = await _clientStorage.GetByIdAsync(client.Id);
 
             Assert.Equal("Alex", result.Name);
 
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id);
         }
 
         [Fact]
-        public void GetClientsByFilterShouldReturnFilteredClients() 
+        public async Task GetClientsByFilterShouldReturnFilteredClients() 
         {
             var firstClient = new Client
             {
@@ -69,7 +69,7 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
-            _clientStorage.Add(firstClient);
+            await _clientStorage.AddAsync(firstClient);
 
             var secondClient = new Client
             {
@@ -79,18 +79,18 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
-            _clientStorage.Add(secondClient);
+            await _clientStorage.AddAsync(secondClient);
 
-            var filteredClients = _clientStorage.Get(c => c.Name == "Nick");
+            var filteredClients = await _clientStorage.GetAsync(c => c.Name == "Nick");
 
             Assert.Equal(filteredClients.First().Name, secondClient.Name);
 
-            _clientStorage.Delete(firstClient.Id);
-            _clientStorage.Delete(secondClient.Id);
+            await _clientStorage.DeleteAsync(firstClient.Id);
+            await _clientStorage.DeleteAsync(secondClient.Id);
         }
 
         [Fact]
-        public void UpdateClientShouldUpdateExistingClient() 
+        public async Task UpdateClientShouldUpdateExistingClient() 
         {
             var existingClient = new Client
             {
@@ -100,20 +100,20 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
-            _clientStorage.Add(existingClient);
+            await _clientStorage.AddAsync(existingClient);
 
             existingClient.Surname = "Stepanov";
-            _clientStorage.Update(existingClient.Id, existingClient);
+            await _clientStorage.UpdateAsync(existingClient.Id, existingClient);
 
-            var updatedClient = _clientStorage.GetById(existingClient.Id);
+            var updatedClient = await _clientStorage.GetByIdAsync(existingClient.Id);
 
             Assert.Equal("Stepanov", updatedClient.Surname);
 
-            _clientStorage.Delete(existingClient.Id);
+            await _clientStorage.DeleteAsync(existingClient.Id);
         }
 
         [Fact]
-        public void DeleteClientShouldDeleteExistingClient() 
+        public async Task DeleteClientShouldDeleteExistingClient() 
         {
             var client = new Client
             {
@@ -123,17 +123,17 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-25),
                 TelephoneNumber = "1234567890"
             };
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
 
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id);
 
-            var result = _clientStorage.GetById(client.Id);
+            var result = await _clientStorage.GetByIdAsync(client.Id);
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void AddAccountShouldAddAccountToClient() 
+        public async Task AddAccountShouldAddAccountToClient() 
         {
             var client = new Client
             {
@@ -144,23 +144,23 @@ namespace BankSystem.Data.Tests
                 TelephoneNumber = "1234567890",
                 Accounts = new List<Account>()
             };
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
 
             var currency = new Currency { Type = "RUB" };
 
             var account = new Account {Currency = currency, Amount = 1000 };
             
-            _clientStorage.AddAccount(client.Id, account);
+            await _clientStorage.AddAccountAsync(client.Id, account);
             
-            var updatedClient = _clientStorage.GetById(client.Id);
+            var updatedClient = await _clientStorage.GetByIdAsync(client.Id);
 
             Assert.Contains(account, updatedClient.Accounts);
 
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id);
         }
 
         [Fact]
-        public void DeleteClientsAccountShouldDeleteClientAccount() 
+        public async Task DeleteClientsAccountShouldDeleteClientAccount() 
         {
             var client = new Client
             {
@@ -171,24 +171,24 @@ namespace BankSystem.Data.Tests
                 TelephoneNumber = "1234567890",
                 Accounts = new List<Account>()
             };
-            _clientStorage.Add(client);
+            await _clientStorage.AddAsync(client);
 
             var currency = new Currency { Type = "USD" };
 
             var account = new Account {Currency = currency, Amount = 1000 };
-            _clientStorage.AddAccount(client.Id, account);
+            await _clientStorage.AddAccountAsync(client.Id, account);
 
-            _clientStorage.DeleteAccount(client.Id, account.Id);
+            await _clientStorage.DeleteAccountAsync(client.Id, account.Id);
 
-            var updatedClient = _clientStorage.GetById(client.Id);
+            var updatedClient = await _clientStorage.GetByIdAsync(client.Id);
 
             Assert.DoesNotContain(account, updatedClient.Accounts);
 
-            _clientStorage.Delete(client.Id);
+            await _clientStorage.DeleteAsync(client.Id);
         }
 
         [Fact]
-        public void GetClientsAverageAgeReturnAverageAge() 
+        public async Task GetClientsAverageAgeReturnAverageAge() 
         {
             var firstClient = new Client
             {
@@ -198,7 +198,7 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-20),
                 TelephoneNumber = "1234567890",
             };
-            _clientStorage.Add(firstClient);
+            await _clientStorage.AddAsync(firstClient);
 
             var secondClient = new Client
             {
@@ -208,14 +208,14 @@ namespace BankSystem.Data.Tests
                 BirthDate = DateTime.UtcNow.AddYears(-30),
                 TelephoneNumber = "1234567890",
             };
-            _clientStorage.Add(secondClient);
+            await _clientStorage.AddAsync(secondClient);
 
-            var averageAge = _clientStorage.GetAverageAge();
+            var averageAge = await _clientStorage.GetAverageAgeAsync();
 
             Assert.Equal(25, averageAge);
 
-            _clientStorage.Delete(firstClient.Id);
-            _clientStorage.Delete(secondClient.Id);
+            await _clientStorage.DeleteAsync(firstClient.Id);
+            await _clientStorage.DeleteAsync(secondClient.Id);
         }
     }
 }

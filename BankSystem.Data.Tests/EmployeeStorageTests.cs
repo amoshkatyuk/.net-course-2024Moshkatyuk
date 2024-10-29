@@ -18,16 +18,13 @@ namespace BankSystem.Data.Tests
 
         public EmployeeStorageTests()
         {
-            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestBankSystemDb")
-                .Options;
 
             _context = new BankSystemDbContext();
             _employeeStorage = new EmployeeStorage(_context);
         }
 
         [Fact]
-        public void GetByIdShouldReturnEmployeeById() 
+        public async Task GetByIdShouldReturnEmployeeById() 
         {
             var employee = new Employee
             {
@@ -40,17 +37,17 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
 
-            var result = _employeeStorage.GetById(employee.Id);
+            var result = await _employeeStorage.GetByIdAsync(employee.Id);
 
             Assert.Equal(employee, result);
 
-            _employeeStorage.Delete(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id);
         }
 
         [Fact]
-        public void AddEmployeeShouldAddEmployee() 
+        public async Task AddEmployeeShouldAddEmployee() 
         {
             var employee = new Employee
             {
@@ -63,17 +60,17 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
 
-            var result = _employeeStorage.GetById(employee.Id);
+            var result = await _employeeStorage.GetByIdAsync(employee.Id);
 
             Assert.Equal("Alex", result.Name);
 
-            _employeeStorage.Delete(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id);
         }
 
         [Fact]
-        public void GetEmployeesByFilterShouldReturnFilteredEmployees() 
+        public async Task GetEmployeesByFilterShouldReturnFilteredEmployees() 
         {
             var firstEmployee = new Employee
             {
@@ -86,7 +83,7 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            _employeeStorage.Add(firstEmployee);
+            await _employeeStorage.AddAsync(firstEmployee);
 
             var secondEmployee = new Employee
             {
@@ -99,19 +96,19 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            _employeeStorage.Add(secondEmployee);
+            await _employeeStorage.AddAsync(secondEmployee);
 
-            var filteredEmployees = _employeeStorage.Get(e => e.Name == "Nick");
+            var filteredEmployees = await _employeeStorage.GetAsync(e => e.Name == "Nick");
 
             Assert.Equal(filteredEmployees.First().Name, secondEmployee.Name);
 
-            _employeeStorage.Delete(firstEmployee.Id);
+            await _employeeStorage.DeleteAsync(firstEmployee.Id);
 
-            _employeeStorage.Delete(secondEmployee.Id);
+            await _employeeStorage.DeleteAsync(secondEmployee.Id);
         }
 
         [Fact]
-        public void UpdateEmployeeShouldUpdateExistingEmployee() 
+        public async Task UpdateEmployeeShouldUpdateExistingEmployee() 
         {
             var existingEmployee = new Employee
             {
@@ -124,20 +121,20 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            _employeeStorage.Add(existingEmployee);
+            await _employeeStorage.AddAsync(existingEmployee);
 
             existingEmployee.Surname = "Stepanov";
-            _employeeStorage.Update(existingEmployee.Id, existingEmployee);
+            await _employeeStorage.UpdateAsync(existingEmployee.Id, existingEmployee);
 
-            var updatedEmployee = _employeeStorage.GetById(existingEmployee.Id);
+            var updatedEmployee = await _employeeStorage.GetByIdAsync(existingEmployee.Id);
 
             Assert.Equal("Stepanov", updatedEmployee.Surname);
 
-            _employeeStorage.Delete(existingEmployee.Id);
+            await _employeeStorage.DeleteAsync(existingEmployee.Id);
         }
 
         [Fact]
-        public void DeleteEmployeeShouldDeleteExistingEmployee() 
+        public async Task DeleteEmployeeShouldDeleteExistingEmployee() 
         {
             var employee = new Employee
             {
@@ -150,11 +147,11 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            _employeeStorage.Add(employee);
+            await _employeeStorage.AddAsync(employee);
 
-            _employeeStorage.Delete(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id);
 
-            var result = _employeeStorage.GetById(employee.Id);
+            var result = await _employeeStorage.GetByIdAsync(employee.Id);
 
             Assert.Null(result);
         }

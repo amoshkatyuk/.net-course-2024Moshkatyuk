@@ -6,19 +6,22 @@ using System.Threading.Tasks;
 using BankSystem.App.Exceptions;
 using BankSystem.Domain.Models;
 using BankSystem.App.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 namespace BankSystem.App.Services
 {
     public class ClientService
     {
         private readonly IClientStorage _clientStorage;
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-        public ClientService(IClientStorage clientStorage)
+        public ClientService( IClientStorage clientStorage)
         {
             _clientStorage = clientStorage;
         }
 
-        public void ValidateClient(Client client)
+        public async Task ValidateClientAsync(Client client)
         {
             if (string.IsNullOrWhiteSpace(client.PassportData))
             {
@@ -31,9 +34,9 @@ namespace BankSystem.App.Services
             }
         }
 
-        public Client GetClientById(Guid clientId) 
+        public async Task<Client> GetClientByIdAsync(Guid clientId) 
         {
-            var client = _clientStorage.GetById(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId);
             
             if (client == null) 
             {
@@ -43,60 +46,62 @@ namespace BankSystem.App.Services
             return client;
         }
 
-        public void AddClient(Client client)
+        public async Task AddClientAsync(Client client)
         {
-            ValidateClient(client);
+            await ValidateClientAsync(client);
 
             var currency = new Currency { Type = "USD" };
 
             var defaultAccount = new Account { Currency = currency, Amount = 0 };
 
-            _clientStorage.Add(client);
-            _clientStorage.AddAccount(client.Id, defaultAccount);
+            await _clientStorage.AddAsync(client);
+            await _clientStorage.AddAccountAsync(client.Id, defaultAccount);
         }
 
-        public List<Client> FilterClients(Func<Client, bool> filter)
+        public async Task<List<Client>> FilterClientsAsync(Func<Client, bool> filter)
         {
-            return _clientStorage.Get(filter);
+            return await _clientStorage.GetAsync(filter);
         }
 
-        public void UpdateClient(Client client)
+        public async Task UpdateClientAsync(Client client)
         {
-            if (_clientStorage.GetById(client.Id) == null)
+            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
+
+            if (existingClient == null)
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            _clientStorage.Update(client.Id, client);
+            await _clientStorage.UpdateAsync(client.Id, client);
         }
 
-        public void DeleteClient(Guid clientId) 
+        public async Task DeleteClientAsync(Guid clientId) 
         {
-            var client = _clientStorage.GetById(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId);
 
             if (client == null)
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            _clientStorage.Delete(clientId);
+            await _clientStorage.DeleteAsync(clientId);
         }
        
-        public void AddAdditionalAccount(Guid clientId, Account account)
+        public async Task AddAdditionalAccountAsync(Guid clientId, Account account)
         {
-            var client = _clientStorage.GetById(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId);
 
             if (client == null)
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            _clientStorage.AddAccount(clientId, account);
+            await _clientStorage.AddAccountAsync(clientId, account);
         }
 
-        public void DeleteAccount(Guid clientId, Guid accountId) 
+        public async Task DeleteAccountAsync(Guid clientId, Guid accountId) 
         {
-            var client = _clientStorage.GetById(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId);
 
             if (client == null)
             {
@@ -110,7 +115,55 @@ namespace BankSystem.App.Services
                 throw new EntityNotFoundException("Искомый счет не найден");
             }
 
-            _clientStorage.DeleteAccount(clientId, accountId);
+            await _clientStorage.DeleteAccountAsync(clientId, accountId);
+        }
+
+        public async Task<bool> WithdrawFromAccountsAsync(Dictionary<Guid, List<decimal>> withdrawalRequests)
+        {
+            var tasks = withdrawalRequests.Select(async request =>
+            {
+                await _semaphore.WaitAsync(); // Ожидание доступа к базе данных
+                try
+                {
+                    bool allWithdrawalsSuccessful = true;
+                    foreach (var amount in request.Value)
+                    {
+                        bool result = await WithdrawAsync(request.Key, amount);
+                        if (!result)
+                        {
+                            allWithdrawalsSuccessful = false;
+                        }
+                    }
+                    return allWithdrawalsSuccessful;
+                }
+                finally
+                {
+                    _semaphore.Release(); // Освобождаем семафор
+                }
+            });
+
+            var results = await Task.WhenAll(tasks);
+            return results.All(result => result);
+        }
+
+        private async Task<bool> WithdrawAsync(Guid clientId, decimal amount)
+        {
+            var client = await _clientStorage.GetByIdAsync(clientId);
+            if (client == null || client.Accounts == null || !client.Accounts.Any())
+            {
+                return false;
+            }
+
+            var account = client.Accounts.FirstOrDefault();
+
+            if (account == null || account.Amount < amount)
+            {
+                return false;
+            }
+
+            account.Amount -= amount;
+            await _clientStorage.UpdateAsync(clientId, client);
+            return true;
         }
     }
 }
