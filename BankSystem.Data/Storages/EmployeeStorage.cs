@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,11 +31,11 @@ namespace BankSystem.Data.Storages
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Employee>> GetAsync(Func<Employee, bool> filter)
+        public async Task<List<Employee>> GetAsync(Expression<Func<Employee, bool>> filter)
         {
-            return await Task.Run(() => _context.Employees
+            return await _context.Employees
                 .Where(filter)
-                .ToList());
+                .ToListAsync();
         }
 
         public async Task UpdateAsync(Guid employeeId, Employee employee)

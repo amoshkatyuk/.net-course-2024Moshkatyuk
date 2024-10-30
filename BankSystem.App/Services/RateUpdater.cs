@@ -14,6 +14,7 @@ namespace BankSystem.App.Services
         private readonly decimal _percentage;
         private readonly TimeSpan _interval;
         private CancellationTokenSource _cancellationTokenSourse;
+        private bool _disposed;
 
         public RateUpdater(IClientStorage clientStorage, decimal percentage, TimeSpan interval)
         {
@@ -30,17 +31,21 @@ namespace BankSystem.App.Services
 
         private async Task RunPeriodicAmountUpdate(CancellationToken cancellationToken) 
         {
-            while (!cancellationToken.IsCancellationRequested) 
+            while (!cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(_interval, cancellationToken);
 
                 var clients = await _clientStorage.GetAsync(c => true);
 
-                foreach (var client in clients) 
+                foreach (var client in clients)
                 {
                     foreach (var account in client.Accounts)
                     {
-                        account.Amount += account.Amount * (_percentage / 100m);
+                        if (account.LastUpdate == null || account.LastUpdate.Value.AddMonths(1) <= DateTime.UtcNow)
+                        {
+                            account.Amount += account.Amount * (_percentage / 100m);
+                            account.LastUpdate = DateTime.UtcNow;
+                        }
                     }
 
                     await _clientStorage.UpdateAsync(client.Id, client);
@@ -51,6 +56,27 @@ namespace BankSystem.App.Services
         public void Stop() 
         {
             _cancellationTokenSourse.Cancel();
+        }
+
+        public void Dispose() 
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) 
+            {
+                return;
+            }
+
+            if (disposing) 
+            {
+                _cancellationTokenSourse?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

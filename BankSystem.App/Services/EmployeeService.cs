@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BankSystem.Domain.Models;
 using BankSystem.App.Exceptions;
 using BankSystem.App.Interfaces;
+using System.Linq.Expressions;
 
 namespace BankSystem.App.Services
 {
@@ -45,7 +46,7 @@ namespace BankSystem.App.Services
             await _employeeStorage.AddAsync(employee);
         }
 
-        public async Task<List<Employee>> FilterEmployeesAsync(Func<Employee, bool> filter)
+        public async Task<List<Employee>> FilterEmployeesAsync(Expression<Func<Employee, bool>> filter)
         {
             return await _employeeStorage.GetAsync(filter);
         }

@@ -8,6 +8,7 @@ using BankSystem.Domain.Models;
 using BankSystem.App.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
+using System.Linq.Expressions;
 
 namespace BankSystem.App.Services
 {
@@ -58,7 +59,7 @@ namespace BankSystem.App.Services
             await _clientStorage.AddAccountAsync(client.Id, defaultAccount);
         }
 
-        public async Task<List<Client>> FilterClientsAsync(Func<Client, bool> filter)
+        public async Task<List<Client>> FilterClientsAsync(Expression<Func<Client, bool>> filter)
         {
             return await _clientStorage.GetAsync(filter);
         }
