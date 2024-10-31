@@ -1,9 +1,11 @@
 ﻿using BankSystem.App.Exceptions;
 using BankSystem.App.Interfaces;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,36 +20,36 @@ namespace BankSystem.Data.Storages
             _context = context;
         }
 
-        public Employee GetById(Guid employeeId)
+        public async Task<Employee> GetByIdAsync(Guid employeeId)
         {
-            return _context.Employees.FirstOrDefault(e => e.Id == employeeId);
+            return await _context.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
         }
 
-        public void Add(Employee employee)
+        public async Task AddAsync(Employee employee)
         {
-            _context.Employees.Add(employee);
-            _context.SaveChanges();
+            await _context.Employees.AddAsync(employee);
+            await _context.SaveChangesAsync();
         }
 
-        public List<Employee> Get(Func<Employee, bool> filter)
+        public async Task<List<Employee>> GetAsync(Expression<Func<Employee, bool>> filter)
         {
-            return _context.Employees
+            return await _context.Employees
                 .Where(filter)
-                .ToList();
+                .ToListAsync();
         }
 
-        public void Update(Guid employeeId, Employee employee)
+        public async Task UpdateAsync(Guid employeeId, Employee employee)
         {
-            var existingEmployee = GetById(employeeId);
+            var existingEmployee = await GetByIdAsync(employeeId);
             _context.Entry(existingEmployee).CurrentValues.SetValues(employee);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(Guid employeeId)
+        public async Task DeleteAsync(Guid employeeId)
         {
-            var employee = GetById(employeeId);
+            var employee = await GetByIdAsync(employeeId);
             _context.Employees.Remove(employee);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

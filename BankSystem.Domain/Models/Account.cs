@@ -17,6 +17,8 @@ namespace BankSystem.Domain.Models
         public Guid ClientId { get; set; }
         public Client Client { get; set; }
 
+        public DateTime? LastUpdate { get; set; }
+
         public override bool Equals(object obj)
         {
             if (obj is Account account)

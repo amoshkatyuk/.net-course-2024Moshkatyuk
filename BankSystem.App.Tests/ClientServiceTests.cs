@@ -27,94 +27,129 @@ namespace BankSystem.App.Tests
         }
 
         [Fact]
-        public void GetClientByIdShouldReturnClientById() 
+        public async Task GetClientByIdShouldReturnClientById() 
         {
             var client = _testDataGenerator.GenerateClient();
-            _clientService.AddClient(client);
+            await _clientService.AddClientAsync(client);
 
-            var desiredClient = _clientService.GetClientById(client.Id);
+            var desiredClient = await _clientService.GetClientByIdAsync(client.Id);
 
             Assert.NotNull(desiredClient);
             Assert.Equal(client.PassportData, desiredClient.PassportData);
 
-            _clientService.DeleteClient(client.Id);
+            await _clientService.DeleteClientAsync(client.Id);
         }
 
         [Fact]
-        public void AddClientShouldAddClient() 
+        public async Task AddClientShouldAddClient() 
         {
             var client = _testDataGenerator.GenerateClient();
-            _clientService.AddClient(client);
+            await _clientService.AddClientAsync(client);
 
-            var existingClient = _clientService.GetClientById(client.Id);
+            var existingClient = await _clientService.GetClientByIdAsync(client.Id);
 
             Assert.Equal(existingClient.PassportData, client.PassportData);
 
-            _clientService.DeleteClient(client.Id);
+            await _clientService.DeleteClientAsync(client.Id);
         }
 
         [Fact]
-        public void GetClientsByFilterShouldReturnFilteredClients() 
+        public async Task GetClientsByFilterShouldReturnFilteredClients() 
         {
             var firstClient = _testDataGenerator.GenerateClient();
             var secondClient = _testDataGenerator.GenerateClient();
 
-            _clientService.AddClient(firstClient);
-            _clientService.AddClient(secondClient);
+            await _clientService.AddClientAsync(firstClient);
+            await _clientService.AddClientAsync(secondClient);
 
-            var filteredClients = _clientService.FilterClients(c => c.PassportData == secondClient.PassportData);
+            var filteredClients = await _clientService.FilterClientsAsync(c => c.PassportData == secondClient.PassportData);
 
             Assert.Single(filteredClients);
 
-            _clientService.DeleteClient(firstClient.Id);
-            _clientService.DeleteClient(secondClient.Id);
+            await _clientService.DeleteClientAsync(firstClient.Id);
+            await _clientService.DeleteClientAsync(secondClient.Id);
         }
 
         [Fact]
-        public void UpdateClientShouldUpdateExistingClient() 
+        public async Task UpdateClientShouldUpdateExistingClient() 
         {
             var existingClient = _testDataGenerator.GenerateClient();
 
-            _clientService.AddClient(existingClient);
+            await _clientService.AddClientAsync(existingClient);
 
             existingClient.TelephoneNumber = "37377883636";
-            _context.Clients.Update(existingClient);
 
-            var updatedClient = _clientService.GetClientById(existingClient.Id);
+            await _clientService.UpdateClientAsync(existingClient);
+
+            var updatedClient = await _clientService.GetClientByIdAsync(existingClient.Id);
 
             Assert.Equal("37377883636", updatedClient.TelephoneNumber);
 
-            _clientService.DeleteClient(existingClient.Id);
+            await _clientService.DeleteClientAsync(existingClient.Id);
         }
 
         [Fact]
-        public void AddAccountShouldAddAccountToClient() 
+        public async Task AddAccountShouldAddAccountToClient() 
         {
             var client = _testDataGenerator.GenerateClient();
-            _clientService.AddClient(client);
+            await _clientService.AddClientAsync(client);
 
             var account = _testDataGenerator.GenerateAccount(_context);
 
-            _clientService.AddAdditionalAccount(client.Id, account);
+            await _clientService.AddAdditionalAccountAsync(client.Id, account);
 
-            var updatedClient = _clientService.GetClientById(client.Id);
+            var updatedClient = await _clientService.GetClientByIdAsync(client.Id);
 
             Assert.Contains(account, updatedClient.Accounts);
 
-            _clientService.DeleteClient(client.Id);
+            await _clientService.DeleteClientAsync(client.Id);
         }
 
         [Fact]
-        public void DeleteClientsAccountShouldDeleteClientAccount() 
+        public async Task DeleteClientsAccountShouldDeleteClientAccount() 
         {
             var client = _testDataGenerator.GenerateClient();
-            _clientService.AddClient(client);
+            await _clientService.AddClientAsync(client);
 
-            _clientService.DeleteAccount(client.Id, client.Accounts.First().Id);
+            await _clientService.DeleteAccountAsync(client.Id, client.Accounts.First().Id);
 
             Assert.DoesNotContain(client.Accounts.FirstOrDefault(), client.Accounts);
 
-            _clientService.DeleteClient(client.Id);
+            await _clientService.DeleteClientAsync(client.Id);
+        }
+
+        [Fact]
+        public async Task WithdrawFromAccountsAsyncShouldReturnTrueWhenMoneyIsSuccessfullyWithdrawn() 
+        {
+            var firstClient = _testDataGenerator.GenerateClient();
+            var secondClient = _testDataGenerator.GenerateClient();
+
+            await _clientService.AddClientAsync(firstClient);
+            await _clientService.AddClientAsync(secondClient);
+
+            firstClient.Accounts.FirstOrDefault().Amount = 5000;
+            secondClient.Accounts.FirstOrDefault().Amount = 5000;
+
+            await _clientService.UpdateClientAsync(firstClient);
+            await _clientService.UpdateClientAsync(secondClient);
+
+            var withdrawalRequests = new Dictionary<Guid, List<decimal>>
+            {
+                { firstClient.Id, new List<decimal> { 500m, 1500m } },
+                { secondClient.Id, new List<decimal> { 300m, 700m, 1000m } }
+            };
+
+            var result = await _clientService.WithdrawFromAccountsAsync(withdrawalRequests);
+
+            Assert.True(result);
+
+            var updatedFirstClient = await _clientService.GetClientByIdAsync(firstClient.Id);
+            var updatedSecondClient = await _clientService.GetClientByIdAsync(secondClient.Id);
+
+
+            await _clientService.DeleteClientAsync(firstClient.Id);
+            await _clientService.DeleteClientAsync(secondClient.Id);
+
         }
     }
 }

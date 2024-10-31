@@ -29,7 +29,7 @@ namespace BankSystem.ExportTool.Tests
         }
 
         [Fact]
-        public void ExportClientDataInCsvShouldExportClientDataInCsv()
+        public async Task ExportClientDataInCsvShouldExportClientDataInCsv()
         {
             var clients = new List<Client>();
             clients.Add(_testDataGenerator.GenerateClient());
@@ -37,7 +37,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.AddClient(client);
+                await _clientService.AddClientAsync(client);
             }
 
             _exportService.ExportDataInCsv(clients, _testCsvDirectory, _csvFileName);
@@ -51,12 +51,12 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.DeleteClient(client.Id);
+                await _clientService.DeleteClientAsync(client.Id);
             }
         }
 
         [Fact]
-        public void ImportClientDataFromCsvShouldImportClientDataFromCsv()
+        public async Task ImportClientDataFromCsvShouldImportClientDataFromCsv()
         {
             var clients = new List<Client>();
             clients.Add(_testDataGenerator.GenerateClient());
@@ -64,7 +64,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.AddClient(client);
+                await _clientService.AddClientAsync(client);
             }
 
             _exportService.ExportDataInCsv(clients, _testCsvDirectory, _csvFileName);
@@ -84,12 +84,12 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.DeleteClient(client.Id);
+                await _clientService.DeleteClientAsync(client.Id);
             }
         }
 
         [Fact]
-        public void ImportClientDataFromCsvShouldThrowFileNotFoundExceptionWhenFileDoesNotExist()
+        public async Task ImportClientDataFromCsvShouldThrowFileNotFoundExceptionWhenFileDoesNotExist()
         {
             string filePath = Path.Combine(_testCsvDirectory, _csvFileName);
             if (File.Exists(filePath))
@@ -102,7 +102,7 @@ namespace BankSystem.ExportTool.Tests
         }
 
         [Fact]
-        public void ExportSerializedDataToFileShouldExportClientDataInJson() 
+        public async Task ExportSerializedDataToFileShouldExportClientDataInJson() 
         {
             var clients = new List<Client>();
             clients.Add(_testDataGenerator.GenerateClient());
@@ -110,7 +110,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.AddClient(client);
+                await _clientService.AddClientAsync(client);
             }
 
             _exportService.ExportSerializedDataToFile(clients, _testJsonDirectory, _jsonFileName);
@@ -127,12 +127,12 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients) 
             {
-                _clientService.DeleteClient(client.Id);
+                await _clientService.DeleteClientAsync(client.Id);
             }
         }
 
         [Fact]
-        public void ImportSerializedDataFromFileShouldImportClientDataFromJson()
+        public async Task ImportSerializedDataFromFileShouldImportClientDataFromJson()
         {
             var clients = new List<Client>
             {
@@ -142,7 +142,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.AddClient(client);
+                await _clientService.AddClientAsync(client);
             }
 
             _exportService.ExportSerializedDataToFile(clients, _testJsonDirectory, _jsonFileName);
@@ -158,7 +158,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                _clientService.DeleteClient(client.Id);
+                await _clientService.DeleteClientAsync(client.Id);
             }
         }
 

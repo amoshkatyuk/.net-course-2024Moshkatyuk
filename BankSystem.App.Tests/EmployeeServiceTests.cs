@@ -20,74 +20,70 @@ namespace BankSystem.App.Tests
 
         public EmployeeServiceTests()
         {
-            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
-                .UseNpgsql("Host=localhost;Port=5432;Database=BankSystemDb;Username=postgres;Password=admin")
-                .Options;
-
             _context = new BankSystemDbContext();
             _testDataGenerator = new TestDataGenerator();
             _employeeService = new EmployeeService(new EmployeeStorage(_context));
         }
 
         [Fact]
-        public void GetEmployeeByIdShouldReturnEmployeeById() 
+        public async Task GetEmployeeByIdShouldReturnEmployeeById() 
         {
             var employee = _testDataGenerator.GenerateEmployee();
-            _employeeService.AddEmployee(employee);
+            await _employeeService.AddEmployeeAsync(employee);
 
-            var desiredEmployee = _employeeService.GetEmployeeById(employee.Id);
+            var desiredEmployee = await _employeeService.GetEmployeeByIdAsync(employee.Id);
 
             Assert.NotNull(desiredEmployee);
             Assert.Equal(employee.PassportData, desiredEmployee.PassportData);
 
-            _employeeService.DeleteEmployee(employee.Id);
+            await _employeeService.DeleteEmployeeAsync(employee.Id);
         }
 
         [Fact]
-        public void AddEmployeeShouldAddEmployee() 
+        public async Task AddEmployeeShouldAddEmployee() 
         {
             var employee = _testDataGenerator.GenerateEmployee();
-            _employeeService.AddEmployee(employee);
+            await _employeeService.AddEmployeeAsync(employee);
 
-            var existingEmployee = _employeeService.GetEmployeeById(employee.Id);
+            var existingEmployee = await _employeeService.GetEmployeeByIdAsync(employee.Id);
 
             Assert.Equal(employee.PassportData, existingEmployee.PassportData);
 
-            _employeeService.DeleteEmployee(employee.Id);
+            await _employeeService.DeleteEmployeeAsync(employee.Id);
         }
 
         [Fact]
-        public void GetEmployeesByFilterShouldReturnFilteredEmployees()
+        public async Task GetEmployeesByFilterShouldReturnFilteredEmployees()
         {
             var firstEmployee = _testDataGenerator.GenerateEmployee();
             var secondEmployee = _testDataGenerator.GenerateEmployee();
 
-            _employeeService.AddEmployee(firstEmployee);
-            _employeeService.AddEmployee(secondEmployee);
+            await _employeeService.AddEmployeeAsync(firstEmployee);
+            await _employeeService.AddEmployeeAsync(secondEmployee);
 
-            var filteredEmployees = _employeeService.FilterEmployees(e => e.PassportData == secondEmployee.PassportData);
+            var filteredEmployees = await _employeeService.FilterEmployeesAsync(e => e.PassportData == secondEmployee.PassportData);
 
             Assert.Single(filteredEmployees);
 
-            _employeeService.DeleteEmployee(firstEmployee.Id);
-            _employeeService.DeleteEmployee(secondEmployee.Id);
+            await _employeeService.DeleteEmployeeAsync(firstEmployee.Id);
+            await _employeeService.DeleteEmployeeAsync(secondEmployee.Id);
         }
 
         [Fact]
-        public void UpdateEmployeeShouldUpdateExistingEmployee()
+        public async Task UpdateEmployeeShouldUpdateExistingEmployee()
         {
             var existingEmployee = _testDataGenerator.GenerateEmployee();
 
-            _employeeService.AddEmployee(existingEmployee);
+            await _employeeService.AddEmployeeAsync(existingEmployee);
 
             existingEmployee.Contract = "Half-day";
-            _context.Employees.Update(existingEmployee);
+            await _employeeService.UpdateEmployeeAsync(existingEmployee);
 
-            var updatedEmployee = _employeeService.GetEmployeeById(existingEmployee.Id);
+            var updatedEmployee = await _employeeService.GetEmployeeByIdAsync(existingEmployee.Id);
 
             Assert.Equal("Half-day", updatedEmployee.Contract);
 
-            _employeeService.DeleteEmployee(existingEmployee.Id);
+            await _employeeService.DeleteEmployeeAsync(existingEmployee.Id);
         }
     }
 }
