@@ -17,10 +17,15 @@ namespace BankSystem.App.Tests
         private readonly BankSystemDbContext _context;
         private readonly EmployeeService _employeeService;
         private readonly TestDataGenerator _testDataGenerator;
+        private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
         public EmployeeServiceTests()
         {
-            _context = new BankSystemDbContext();
+            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
+                .UseNpgsql("Host=localhost;Port=5432;Database=BankSystemDb;Username=postgres;Password=admin")
+                .Options;
+
+            _context = new BankSystemDbContext(options);
             _testDataGenerator = new TestDataGenerator();
             _employeeService = new EmployeeService(new EmployeeStorage(_context));
         }
@@ -29,27 +34,27 @@ namespace BankSystem.App.Tests
         public async Task GetEmployeeByIdShouldReturnEmployeeById() 
         {
             var employee = _testDataGenerator.GenerateEmployee();
-            await _employeeService.AddEmployeeAsync(employee);
+            await _employeeService.AddEmployeeAsync(employee, _cancellationToken);
 
-            var desiredEmployee = await _employeeService.GetEmployeeByIdAsync(employee.Id);
+            var desiredEmployee = await _employeeService.GetEmployeeByIdAsync(employee.Id, _cancellationToken);
 
             Assert.NotNull(desiredEmployee);
             Assert.Equal(employee.PassportData, desiredEmployee.PassportData);
 
-            await _employeeService.DeleteEmployeeAsync(employee.Id);
+            await _employeeService.DeleteEmployeeAsync(employee.Id, _cancellationToken);
         }
 
         [Fact]
         public async Task AddEmployeeShouldAddEmployee() 
         {
             var employee = _testDataGenerator.GenerateEmployee();
-            await _employeeService.AddEmployeeAsync(employee);
+            await _employeeService.AddEmployeeAsync(employee, _cancellationToken);
 
-            var existingEmployee = await _employeeService.GetEmployeeByIdAsync(employee.Id);
+            var existingEmployee = await _employeeService.GetEmployeeByIdAsync(employee.Id, _cancellationToken);
 
             Assert.Equal(employee.PassportData, existingEmployee.PassportData);
 
-            await _employeeService.DeleteEmployeeAsync(employee.Id);
+            await _employeeService.DeleteEmployeeAsync(employee.Id, _cancellationToken);
         }
 
         [Fact]
@@ -58,15 +63,15 @@ namespace BankSystem.App.Tests
             var firstEmployee = _testDataGenerator.GenerateEmployee();
             var secondEmployee = _testDataGenerator.GenerateEmployee();
 
-            await _employeeService.AddEmployeeAsync(firstEmployee);
-            await _employeeService.AddEmployeeAsync(secondEmployee);
+            await _employeeService.AddEmployeeAsync(firstEmployee, _cancellationToken);
+            await _employeeService.AddEmployeeAsync(secondEmployee, _cancellationToken);
 
-            var filteredEmployees = await _employeeService.FilterEmployeesAsync(e => e.PassportData == secondEmployee.PassportData);
+            var filteredEmployees = await _employeeService.FilterEmployeesAsync(e => e.PassportData == secondEmployee.PassportData, _cancellationToken);
 
             Assert.Single(filteredEmployees);
 
-            await _employeeService.DeleteEmployeeAsync(firstEmployee.Id);
-            await _employeeService.DeleteEmployeeAsync(secondEmployee.Id);
+            await _employeeService.DeleteEmployeeAsync(firstEmployee.Id, _cancellationToken);
+            await _employeeService.DeleteEmployeeAsync(secondEmployee.Id, _cancellationToken);
         }
 
         [Fact]
@@ -74,16 +79,16 @@ namespace BankSystem.App.Tests
         {
             var existingEmployee = _testDataGenerator.GenerateEmployee();
 
-            await _employeeService.AddEmployeeAsync(existingEmployee);
+            await _employeeService.AddEmployeeAsync(existingEmployee, _cancellationToken);
 
             existingEmployee.Contract = "Half-day";
-            await _employeeService.UpdateEmployeeAsync(existingEmployee);
+            await _employeeService.UpdateEmployeeAsync(existingEmployee, _cancellationToken);
 
-            var updatedEmployee = await _employeeService.GetEmployeeByIdAsync(existingEmployee.Id);
+            var updatedEmployee = await _employeeService.GetEmployeeByIdAsync(existingEmployee.Id, _cancellationToken);
 
             Assert.Equal("Half-day", updatedEmployee.Contract);
 
-            await _employeeService.DeleteEmployeeAsync(existingEmployee.Id);
+            await _employeeService.DeleteEmployeeAsync(existingEmployee.Id, _cancellationToken);
         }
     }
 }

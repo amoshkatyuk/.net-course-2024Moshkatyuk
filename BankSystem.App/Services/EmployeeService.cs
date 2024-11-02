@@ -7,10 +7,11 @@ using BankSystem.Domain.Models;
 using BankSystem.App.Exceptions;
 using BankSystem.App.Interfaces;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace BankSystem.App.Services
 {
-    public class EmployeeService
+    public class EmployeeService : IEmployeeService
     {
         private readonly IStorage<Employee> _employeeStorage;
 
@@ -19,9 +20,9 @@ namespace BankSystem.App.Services
             _employeeStorage = employeeStorage;
         }
 
-        public async Task<Employee> GetEmployeeByIdAsync(Guid employeeId)
+        public async Task<Employee> GetEmployeeByIdAsync(Guid employeeId, CancellationToken cancellationToken)
         {
-            var employee = await _employeeStorage.GetByIdAsync(employeeId);
+            var employee = await _employeeStorage.GetByIdAsync(employeeId, cancellationToken);
 
             if (employee == null)
             {
@@ -31,7 +32,7 @@ namespace BankSystem.App.Services
             return employee;
         }
 
-        public async Task AddEmployeeAsync(Employee employee)
+        public async Task AddEmployeeAsync(Employee employee, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(employee.PassportData))
             {
@@ -43,36 +44,36 @@ namespace BankSystem.App.Services
                 throw new UnderagePeopleException("Несовершеннолетний работник");
             }
 
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, cancellationToken);
         }
 
-        public async Task<List<Employee>> FilterEmployeesAsync(Expression<Func<Employee, bool>> filter)
+        public async Task<List<Employee>> FilterEmployeesAsync(Expression<Func<Employee, bool>> filter, CancellationToken cancellationToken)
         {
-            return await _employeeStorage.GetAsync(filter);
+            return await _employeeStorage.GetAsync(filter, cancellationToken);
         }
 
-        public async Task UpdateEmployeeAsync(Employee employee)
+        public async Task UpdateEmployeeAsync(Employee employee, CancellationToken cancellationToken)
         {
-            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id);
+            var existingEmployee = await _employeeStorage.GetByIdAsync(employee.Id, cancellationToken);
 
             if (existingEmployee == null)
             {
                 throw new EntityNotFoundException("Искомый работник не найден");
             }
 
-            await _employeeStorage.UpdateAsync(employee.Id, employee);
+            await _employeeStorage.UpdateAsync(employee.Id, employee, cancellationToken);
         }
 
-        public async Task DeleteEmployeeAsync(Guid employeeId) 
+        public async Task DeleteEmployeeAsync(Guid employeeId, CancellationToken cancellationToken) 
         {
-            var employee = await _employeeStorage.GetByIdAsync(employeeId);
+            var employee = await _employeeStorage.GetByIdAsync(employeeId, cancellationToken);
 
             if (employee == null)
             {
                 throw new EntityNotFoundException("Искомый работник не найден");
             }
 
-            await _employeeStorage.DeleteAsync(employeeId);
+            await _employeeStorage.DeleteAsync(employeeId, cancellationToken);
         }
     }
 }

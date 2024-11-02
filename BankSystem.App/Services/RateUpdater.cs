@@ -35,7 +35,7 @@ namespace BankSystem.App.Services
             {
                 await Task.Delay(_interval, cancellationToken);
 
-                var clients = await _clientStorage.GetAsync(c => true);
+                var clients = await _clientStorage.GetAsync(c => true, cancellationToken);
 
                 foreach (var client in clients)
                 {
@@ -48,7 +48,7 @@ namespace BankSystem.App.Services
                         }
                     }
 
-                    await _clientStorage.UpdateAsync(client.Id, client);
+                    await _clientStorage.UpdateAsync(client.Id, client, cancellationToken);
                 }
             }
         }

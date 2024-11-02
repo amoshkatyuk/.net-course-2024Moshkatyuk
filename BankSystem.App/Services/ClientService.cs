@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace BankSystem.App.Services
 {
-    public class ClientService
+    public class ClientService : IClientService
     {
         private readonly IClientStorage _clientStorage;
         private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
@@ -35,9 +35,9 @@ namespace BankSystem.App.Services
             }
         }
 
-        public async Task<Client> GetClientByIdAsync(Guid clientId) 
+        public async Task<Client> GetClientByIdAsync(Guid clientId, CancellationToken cancellationToken) 
         {
-            var client = await _clientStorage.GetByIdAsync(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
             
             if (client == null) 
             {
@@ -47,7 +47,7 @@ namespace BankSystem.App.Services
             return client;
         }
 
-        public async Task AddClientAsync(Client client)
+        public async Task AddClientAsync(Client client, CancellationToken cancellationToken)
         {
             await ValidateClientAsync(client);
 
@@ -55,54 +55,54 @@ namespace BankSystem.App.Services
 
             var defaultAccount = new Account { Currency = currency, Amount = 0 };
 
-            await _clientStorage.AddAsync(client);
-            await _clientStorage.AddAccountAsync(client.Id, defaultAccount);
+            await _clientStorage.AddAsync(client, cancellationToken);
+            await _clientStorage.AddAccountAsync(client.Id, defaultAccount, cancellationToken);
         }
 
-        public async Task<List<Client>> FilterClientsAsync(Expression<Func<Client, bool>> filter)
+        public async Task<List<Client>> FilterClientsAsync(Expression<Func<Client, bool>> filter, CancellationToken cancellationToken)
         {
-            return await _clientStorage.GetAsync(filter);
+            return await _clientStorage.GetAsync(filter, cancellationToken);
         }
 
-        public async Task UpdateClientAsync(Client client)
+        public async Task UpdateClientAsync(Client client, CancellationToken cancellationToken)
         {
-            var existingClient = await _clientStorage.GetByIdAsync(client.Id);
+            var existingClient = await _clientStorage.GetByIdAsync(client.Id, cancellationToken);
 
             if (existingClient == null)
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            await _clientStorage.UpdateAsync(client.Id, client);
+            await _clientStorage.UpdateAsync(client.Id, client, cancellationToken);
         }
 
-        public async Task DeleteClientAsync(Guid clientId) 
+        public async Task DeleteClientAsync(Guid clientId, CancellationToken cancellationToken) 
         {
-            var client = await _clientStorage.GetByIdAsync(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
 
             if (client == null)
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            await _clientStorage.DeleteAsync(clientId);
+            await _clientStorage.DeleteAsync(clientId, cancellationToken);
         }
        
-        public async Task AddAdditionalAccountAsync(Guid clientId, Account account)
+        public async Task AddAdditionalAccountAsync(Guid clientId, Account account, CancellationToken cancellationToken)
         {
-            var client = await _clientStorage.GetByIdAsync(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
 
             if (client == null)
             {
                 throw new EntityNotFoundException("Искомый клиент не найден");
             }
 
-            await _clientStorage.AddAccountAsync(clientId, account);
+            await _clientStorage.AddAccountAsync(clientId, account, cancellationToken);
         }
 
-        public async Task DeleteAccountAsync(Guid clientId, Guid accountId) 
+        public async Task DeleteAccountAsync(Guid clientId, Guid accountId, CancellationToken cancellationToken) 
         {
-            var client = await _clientStorage.GetByIdAsync(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
 
             if (client == null)
             {
@@ -116,20 +116,20 @@ namespace BankSystem.App.Services
                 throw new EntityNotFoundException("Искомый счет не найден");
             }
 
-            await _clientStorage.DeleteAccountAsync(clientId, accountId);
+            await _clientStorage.DeleteAccountAsync(clientId, accountId, cancellationToken);
         }
 
-        public async Task<bool> WithdrawFromAccountsAsync(Dictionary<Guid, List<decimal>> withdrawalRequests)
+        public async Task<bool> WithdrawFromAccountsAsync(Dictionary<Guid, List<decimal>> withdrawalRequests, CancellationToken cancellationToken)
         {
             var tasks = withdrawalRequests.Select(async request =>
             {
-                await _semaphore.WaitAsync(); // Ожидание доступа к базе данных
+                await _semaphore.WaitAsync(cancellationToken);
                 try
                 {
                     bool allWithdrawalsSuccessful = true;
                     foreach (var amount in request.Value)
                     {
-                        bool result = await WithdrawAsync(request.Key, amount);
+                        bool result = await WithdrawAsync(request.Key, amount, cancellationToken);
                         if (!result)
                         {
                             allWithdrawalsSuccessful = false;
@@ -139,7 +139,7 @@ namespace BankSystem.App.Services
                 }
                 finally
                 {
-                    _semaphore.Release(); // Освобождаем семафор
+                    _semaphore.Release();
                 }
             });
 
@@ -147,9 +147,9 @@ namespace BankSystem.App.Services
             return results.All(result => result);
         }
 
-        private async Task<bool> WithdrawAsync(Guid clientId, decimal amount)
+        private async Task<bool> WithdrawAsync(Guid clientId, decimal amount, CancellationToken cancellationToken)
         {
-            var client = await _clientStorage.GetByIdAsync(clientId);
+            var client = await _clientStorage.GetByIdAsync(clientId, cancellationToken);
             if (client == null || client.Accounts == null || !client.Accounts.Any())
             {
                 return false;
@@ -163,7 +163,7 @@ namespace BankSystem.App.Services
             }
 
             account.Amount -= amount;
-            await _clientStorage.UpdateAsync(clientId, client);
+            await _clientStorage.UpdateAsync(clientId, client, cancellationToken);
             return true;
         }
     }

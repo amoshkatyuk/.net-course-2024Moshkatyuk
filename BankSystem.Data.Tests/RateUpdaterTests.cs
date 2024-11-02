@@ -1,6 +1,7 @@
 ﻿using BankSystem.App.Services;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,15 @@ namespace BankSystem.Data.Tests
         private ClientStorage _clientStorage;
         private BankSystemDbContext _context;
         private TestDataGenerator _testDataGenerator;
+        private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
         public RateUpdaterTests()
         {
-            _context = new BankSystemDbContext();
+            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
+                .UseNpgsql("Host=localhost;Port=5432;Database=BankSystemDb;Username=postgres;Password=admin")
+                .Options;
+
+            _context = new BankSystemDbContext(options);
             _clientStorage = new ClientStorage(_context);
             _testDataGenerator = new TestDataGenerator();
         }
@@ -34,13 +40,13 @@ namespace BankSystem.Data.Tests
                 TelephoneNumber = "1234567890",
                 Accounts = new List<Account>()
             };
-            await _clientStorage.AddAsync(client);
+            await _clientStorage.AddAsync(client, _cancellationToken);
 
             var currency = new Currency { Type = "RUB" };
 
             var account = new Account { Currency = currency, Amount = 1000 };
 
-            await _clientStorage.AddAccountAsync(client.Id, account);
+            await _clientStorage.AddAccountAsync(client.Id, account, _cancellationToken);
 
             var percentage = 10m;
             var interval = TimeSpan.FromMilliseconds(100);
@@ -51,13 +57,13 @@ namespace BankSystem.Data.Tests
 
             rateUpdater.Stop();
 
-            var updatedClient = await _clientStorage.GetByIdAsync(client.Id);
+            var updatedClient = await _clientStorage.GetByIdAsync(client.Id, _cancellationToken);
             var updatedAccount = updatedClient.Accounts.First();
 
             
             Assert.Equal(1100, updatedAccount.Amount);
 
-            await _clientStorage.DeleteAsync(client.Id);
+            await _clientStorage.DeleteAsync(client.Id, _cancellationToken);
         }
     }
 }
