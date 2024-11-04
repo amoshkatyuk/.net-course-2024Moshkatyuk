@@ -12,6 +12,10 @@ namespace BankSystem.App.Validators
     {
         public EmployeeDtoValidator()
         {
+            RuleFor(c => c.Id)
+                .NotNull()
+                .NotEmpty();
+
             RuleFor(e => e.FullName)
                 .NotNull()
                 .NotEmpty()

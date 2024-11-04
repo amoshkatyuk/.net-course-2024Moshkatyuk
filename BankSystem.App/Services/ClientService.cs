@@ -22,6 +22,7 @@ namespace BankSystem.App.Services
             _clientStorage = clientStorage;
         }
 
+        // на текущий момент метод может быть убран, но для успешного прохождения тестов из более ранних заданий он оставлен
         public async Task ValidateClientAsync(Client client)
         {
             if (string.IsNullOrWhiteSpace(client.PassportData))

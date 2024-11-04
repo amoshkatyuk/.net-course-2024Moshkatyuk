@@ -22,15 +22,10 @@ namespace BankSystem.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("by guid")]
-        public async Task<IActionResult> GetEmployee([FromQuery] Guid employeeId, CancellationToken cancellationToken)
+        [HttpGet("{employeeId:guid}")]
+        public async Task<IActionResult> GetEmployee([FromRoute] Guid employeeId, CancellationToken cancellationToken)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(employeeId, cancellationToken);
-
-            if (employee == null)
-            {
-                return NotFound();
-            }
 
             var employeeDto = _mapper.Map<EmployeeDto>(employee);
 
@@ -50,10 +45,6 @@ namespace BankSystem.API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateEmployee(Guid employeeId, [FromBody] EmployeeDto employeeDto, CancellationToken cancellationToken)
         {
-            if (employeeDto == null) 
-            {
-                return BadRequest("Данные для обновления сущности не были предоставлены");
-            }
 
             var existingEmployee = await _employeeService.GetEmployeeByIdAsync(employeeId, cancellationToken);
 
@@ -68,11 +59,6 @@ namespace BankSystem.API.Controllers
         public async Task<IActionResult> DeleteEmployee([FromQuery] Guid employeeId, CancellationToken cancellationToken)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(employeeId, cancellationToken);
-
-            if (employee == null)
-            {
-                return NotFound();
-            }
 
             await _employeeService.DeleteEmployeeAsync(employeeId, cancellationToken);
 

@@ -21,15 +21,10 @@ namespace BankSystem.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("by guid")]
-        public async Task<IActionResult> GetClient([FromQuery] Guid clientId, CancellationToken cancellationToken) 
+        [HttpGet("{clientId:guid}")]
+        public async Task<IActionResult> GetClient([FromRoute] Guid clientId, CancellationToken cancellationToken) 
         {
             var client = await _clientService.GetClientByIdAsync(clientId, cancellationToken);
-
-            if (client == null) 
-            {
-                return NotFound();
-            }
 
             var clientDto = _mapper.Map<ClientDto>(client);
             
@@ -49,10 +44,6 @@ namespace BankSystem.API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateClient(Guid clientId, [FromBody] ClientDto clientDto, CancellationToken cancellationToken) 
         {
-            if (clientDto == null) 
-            {
-                return BadRequest("Данные для обновления сущности не были предоставлены");
-            }
 
             var existingClient = await _clientService.GetClientByIdAsync(clientId, cancellationToken);
 
@@ -78,7 +69,7 @@ namespace BankSystem.API.Controllers
             return Ok();
         }
 
-        [HttpGet("by filter")]
+        [HttpGet("filter")]
         public async Task<ActionResult<List<ClientDto>>> SearchClients(
             CancellationToken cancellationToken,
             [FromQuery] string name = null,
