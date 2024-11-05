@@ -27,6 +27,8 @@ builder.Services.AddScoped<IClientStorage, ClientStorage>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IStorage<Employee>, EmployeeStorage>();
 
+builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
+
 builder.Services.AddFluentValidation(config =>
 {
     config.RegisterValidatorsFromAssemblyContaining<ClientDtoValidator>();
