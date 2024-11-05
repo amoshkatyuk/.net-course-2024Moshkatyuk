@@ -3,6 +3,7 @@ using BankSystem.Data;
 using BankSystem.Data.Storages;
 using BankSystem.Domain.Models;
 using ExportTool;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace BankSystem.ExportTool.Tests
@@ -18,10 +19,15 @@ namespace BankSystem.ExportTool.Tests
         private readonly string _csvFileName = "testClients.csv";
         private readonly string _testJsonDirectory = "TestJsonDirectory";
         private readonly string _jsonFileName = "testJsonClients.json";
+        private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
         public ExportServiceTests()
         {
-            _context = new BankSystemDbContext();
+            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
+                .UseNpgsql("Host=localhost;Port=5432;Database=BankSystemDb;Username=postgres;Password=admin")
+                .Options;
+
+            _context = new BankSystemDbContext(options);
             _testDataGenerator = new TestDataGenerator();
             _clientStorage = new ClientStorage(_context);
             _clientService = new ClientService(_clientStorage);
@@ -37,7 +43,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(client, _cancellationToken);
             }
 
             _exportService.ExportDataInCsv(clients, _testCsvDirectory, _csvFileName);
@@ -51,7 +57,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.DeleteClientAsync(client.Id);
+                await _clientService.DeleteClientAsync(client.Id, _cancellationToken);
             }
         }
 
@@ -64,7 +70,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(client, _cancellationToken);
             }
 
             _exportService.ExportDataInCsv(clients, _testCsvDirectory, _csvFileName);
@@ -84,7 +90,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.DeleteClientAsync(client.Id);
+                await _clientService.DeleteClientAsync(client.Id, _cancellationToken);
             }
         }
 
@@ -110,7 +116,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(client, _cancellationToken);
             }
 
             _exportService.ExportSerializedDataToFile(clients, _testJsonDirectory, _jsonFileName);
@@ -127,7 +133,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients) 
             {
-                await _clientService.DeleteClientAsync(client.Id);
+                await _clientService.DeleteClientAsync(client.Id, _cancellationToken);
             }
         }
 
@@ -142,7 +148,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.AddClientAsync(client);
+                await _clientService.AddClientAsync(client, _cancellationToken);
             }
 
             _exportService.ExportSerializedDataToFile(clients, _testJsonDirectory, _jsonFileName);
@@ -158,7 +164,7 @@ namespace BankSystem.ExportTool.Tests
 
             foreach (var client in clients)
             {
-                await _clientService.DeleteClientAsync(client.Id);
+                await _clientService.DeleteClientAsync(client.Id, _cancellationToken);
             }
         }
 

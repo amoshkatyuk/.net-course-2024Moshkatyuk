@@ -15,11 +15,16 @@ namespace BankSystem.Data.Tests
     {
         private EmployeeStorage _employeeStorage;
         private BankSystemDbContext _context;
+        private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
         public EmployeeStorageTests()
         {
 
-            _context = new BankSystemDbContext();
+            var options = new DbContextOptionsBuilder<BankSystemDbContext>()
+                .UseNpgsql("Host=localhost;Port=5432;Database=BankSystemDb;Username=postgres;Password=admin")
+                .Options;
+
+            _context = new BankSystemDbContext(options);
             _employeeStorage = new EmployeeStorage(_context);
         }
 
@@ -37,13 +42,13 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, _cancellationToken);
 
-            var result = await _employeeStorage.GetByIdAsync(employee.Id);
+            var result = await _employeeStorage.GetByIdAsync(employee.Id, _cancellationToken);
 
             Assert.Equal(employee, result);
 
-            await _employeeStorage.DeleteAsync(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id, _cancellationToken);
         }
 
         [Fact]
@@ -60,13 +65,13 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, _cancellationToken);
 
-            var result = await _employeeStorage.GetByIdAsync(employee.Id);
+            var result = await _employeeStorage.GetByIdAsync(employee.Id, _cancellationToken);
 
             Assert.Equal("Alex", result.Name);
 
-            await _employeeStorage.DeleteAsync(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id, _cancellationToken);
         }
 
         [Fact]
@@ -83,7 +88,7 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            await _employeeStorage.AddAsync(firstEmployee);
+            await _employeeStorage.AddAsync(firstEmployee, _cancellationToken);
 
             var secondEmployee = new Employee
             {
@@ -96,15 +101,15 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            await _employeeStorage.AddAsync(secondEmployee);
+            await _employeeStorage.AddAsync(secondEmployee, _cancellationToken);
 
-            var filteredEmployees = await _employeeStorage.GetAsync(e => e.Name == "Nick");
+            var filteredEmployees = await _employeeStorage.GetAsync(e => e.Name == "Nick", _cancellationToken);
 
             Assert.Equal(filteredEmployees.First().Name, secondEmployee.Name);
 
-            await _employeeStorage.DeleteAsync(firstEmployee.Id);
+            await _employeeStorage.DeleteAsync(firstEmployee.Id, _cancellationToken);
 
-            await _employeeStorage.DeleteAsync(secondEmployee.Id);
+            await _employeeStorage.DeleteAsync(secondEmployee.Id, _cancellationToken);
         }
 
         [Fact]
@@ -121,16 +126,16 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            await _employeeStorage.AddAsync(existingEmployee);
+            await _employeeStorage.AddAsync(existingEmployee, _cancellationToken);
 
             existingEmployee.Surname = "Stepanov";
-            await _employeeStorage.UpdateAsync(existingEmployee.Id, existingEmployee);
+            await _employeeStorage.UpdateAsync(existingEmployee.Id, existingEmployee, _cancellationToken);
 
-            var updatedEmployee = await _employeeStorage.GetByIdAsync(existingEmployee.Id);
+            var updatedEmployee = await _employeeStorage.GetByIdAsync(existingEmployee.Id, _cancellationToken);
 
             Assert.Equal("Stepanov", updatedEmployee.Surname);
 
-            await _employeeStorage.DeleteAsync(existingEmployee.Id);
+            await _employeeStorage.DeleteAsync(existingEmployee.Id, _cancellationToken);
         }
 
         [Fact]
@@ -147,11 +152,11 @@ namespace BankSystem.Data.Tests
                 Salary = 50000,
                 Contract = "Full-time"
             };
-            await _employeeStorage.AddAsync(employee);
+            await _employeeStorage.AddAsync(employee, _cancellationToken);
 
-            await _employeeStorage.DeleteAsync(employee.Id);
+            await _employeeStorage.DeleteAsync(employee.Id, _cancellationToken);
 
-            var result = await _employeeStorage.GetByIdAsync(employee.Id);
+            var result = await _employeeStorage.GetByIdAsync(employee.Id, _cancellationToken);
 
             Assert.Null(result);
         }

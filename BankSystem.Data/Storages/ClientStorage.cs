@@ -20,44 +20,44 @@ namespace BankSystem.Data.Storages
             _context = context;
         }
 
-        public async Task<Client> GetByIdAsync(Guid clientId) 
+        public async Task<Client> GetByIdAsync(Guid clientId, CancellationToken cancellationToken) 
         {
             return await _context.Clients
                 .Include(c => c.Accounts)
-                .FirstOrDefaultAsync(c => c.Id == clientId);
+                .FirstOrDefaultAsync(c => c.Id == clientId, cancellationToken);
         }
 
-        public async Task AddAsync(Client client)
+        public async Task AddAsync(Client client, CancellationToken cancellationToken)
         {
-            await _context.Clients.AddAsync(client);
-            await _context.SaveChangesAsync();
+            await _context.Clients.AddAsync(client, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<List<Client>> GetAsync(Expression<Func<Client, bool>> filter)
+        public async Task<List<Client>> GetAsync(Expression<Func<Client, bool>> filter, CancellationToken cancellationToken)
         {
             return await _context.Clients
                 .Include(c => c.Accounts)
                 .Where(filter)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task UpdateAsync(Guid clientId, Client client) 
+        public async Task UpdateAsync(Guid clientId, Client client, CancellationToken cancellationToken) 
         {
-            var existingClient = await GetByIdAsync(clientId);
+            var existingClient = await GetByIdAsync(clientId, cancellationToken);
             _context.Entry(existingClient).CurrentValues.SetValues(client);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(Guid clientId) 
+        public async Task DeleteAsync(Guid clientId, CancellationToken cancellationToken) 
         {
-            var client = await GetByIdAsync(clientId);
+            var client = await GetByIdAsync(clientId, cancellationToken);
             _context.Clients.Remove(client);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task AddAccountAsync(Guid clientId, Account account)
+        public async Task AddAccountAsync(Guid clientId, Account account, CancellationToken cancellationToken)
         {
-            var client = await GetByIdAsync(clientId);
+            var client = await GetByIdAsync(clientId, cancellationToken);
 
             if (client == null)
             {
@@ -67,11 +67,11 @@ namespace BankSystem.Data.Storages
             account.ClientId = clientId;
             account.Client = client;
 
-            var existingCurrency = await _context.Currencies.FirstOrDefaultAsync(c => c.Type == account.Currency.Type);
+            var existingCurrency = await _context.Currencies.FirstOrDefaultAsync(c => c.Type == account.Currency.Type, cancellationToken);
             
             if (existingCurrency == null)
             {
-                await _context.Currencies.AddAsync(account.Currency);
+                await _context.Currencies.AddAsync(account.Currency, cancellationToken);
             }
             else
             {
@@ -79,25 +79,25 @@ namespace BankSystem.Data.Storages
                 account.Currency = existingCurrency;
             }
 
-            await _context.Accounts.AddAsync(account);
-            await _context.SaveChangesAsync();
+            await _context.Accounts.AddAsync(account, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAccountAsync(Guid clientId, Guid accountId) 
+        public async Task DeleteAccountAsync(Guid clientId, Guid accountId, CancellationToken cancellationToken) 
         {
-            var client = await GetByIdAsync(clientId);
+            var client = await GetByIdAsync(clientId, cancellationToken);
             var account = client.Accounts.FirstOrDefault(a => a.Id == accountId);
             
             if (account != null) 
             {
                 client.Accounts.Remove(account);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
         }
 
-        public async Task<double> GetAverageAgeAsync() 
+        public async Task<double> GetAverageAgeAsync(CancellationToken cancellationToken) 
         {
-            return await _context.Clients.AverageAsync(c => c.Age);
+            return await _context.Clients.AverageAsync(c => c.Age, cancellationToken);
         }
     }
 }
