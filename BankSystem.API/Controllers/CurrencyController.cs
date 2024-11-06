@@ -1,5 +1,6 @@
 ﻿using BankSystem.App.Interfaces;
 using BankSystem.App.Services;
+using BankSystem.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,18 +19,16 @@ namespace BankSystem.API.Controllers
 
         [HttpGet("convert")]
         public async Task<IActionResult> ConvertCurrency(
-            [FromQuery] string fromCurrency,
-            [FromQuery] string toCurrency,
-            [FromQuery] decimal amount,
+            [FromQuery] CurrencyConversionRequest request,
             CancellationToken cancellationToken) 
         {
-            var convertedAmount = await _currencyService.ConvertCurrencyAsync(fromCurrency, toCurrency, amount, cancellationToken);
+            var convertedAmount = await _currencyService.ConvertCurrencyAsync(request.FromCurrency, request.ToCurrency, request.Amount, cancellationToken);
 
             return Ok(new 
             {
-                FromCurrency = fromCurrency,
-                ToCurrency = toCurrency,
-                OriginalAmount = amount,
+                FromCurrency = request.FromCurrency,
+                ToCurrency = request.ToCurrency,
+                OriginalAmount = request.Amount,
                 ConvertedAmount = convertedAmount
             });
         }

@@ -32,6 +32,7 @@ builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
 builder.Services.AddFluentValidation(config =>
 {
     config.RegisterValidatorsFromAssemblyContaining<ClientDtoValidator>();
+    config.RegisterValidatorsFromAssemblyContaining<CurrencyConversionRequestValidator>();
 });
 
 

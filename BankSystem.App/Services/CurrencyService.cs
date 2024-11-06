@@ -7,6 +7,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace BankSystem.App.Services
 {
@@ -25,12 +26,14 @@ namespace BankSystem.App.Services
 
         public async Task<decimal> ConvertCurrencyAsync(string fromCurrency, string toCurrency, decimal amount, CancellationToken cancellationToken) 
         {
-            if (string.IsNullOrEmpty(fromCurrency) || string.IsNullOrEmpty(toCurrency) || amount <= 0)
-            {
-                throw new ArgumentException("Неверные параметры для конвертации валют.");
-            }
+            var builder = new StringBuilder(_baseUrl);
 
-            var requestUrl = $"{_baseUrl}?api_key={_apiKey}&from={fromCurrency}&to={toCurrency}&amount={amount}";
+            builder.Append($"?api_key={_apiKey}");
+            builder.Append($"&from={fromCurrency}");
+            builder.Append($"&to={toCurrency}");
+            builder.Append($"&amount={amount}");
+
+            var requestUrl = builder.ToString();
 
             var response = await _httpClient.GetAsync(requestUrl, cancellationToken);
             response.EnsureSuccessStatusCode();
